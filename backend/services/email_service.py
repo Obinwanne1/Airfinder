@@ -12,8 +12,11 @@ def send_email(to_email: str, subject: str, html_body: str):
     sender = app.config.get('MAIL_DEFAULT_SENDER', 'Airfinder <noreply@airfinder.com>')
 
     if not mail_user or not mail_pass or mail_pass == 'your-mail-password-here':
-        # Dev mode: print to console
-        print(f"\n[EMAIL DEV MODE]\nTo: {to_email}\nSubject: {subject}\n{html_body}\n")
+        # Dev mode: write to stdout safely on Windows (cp1252 can't handle emojis)
+        msg = f"\n[EMAIL DEV MODE]\nTo: {to_email}\nSubject: {subject}\n"
+        import sys
+        sys.stdout.buffer.write(msg.encode('utf-8', errors='replace') + b"\n")
+        sys.stdout.flush()
         return True
 
     try:
