@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link active"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar"><div class="admin-page-title">System Settings</div></div>
+  <div class="admin-content">
+    <div class="alert alert-warning">⚠ Settings changes take effect after server restart. Contact your developer to update .env file.</div>
+
+    <div class="card card-body mt-3" id="settings-card">
+      <h3 class="mb-3">Current Configuration</h3>
+      <div id="settings-body"><div class="spinner"></div></div>
+    </div>
+
+    <div class="card card-body mt-3">
+      <h3 class="mb-2">Revenue Model Controls</h3>
+      <p class="text-sm text-gray mb-3">These values are loaded from the .env file. To change them, update the file and restart the server.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+        <div class="card card-body" style="background:var(--gray-50);">
+          <div class="text-xs text-gray">DEFAULT_MARKUP_PERCENT</div>
+          <div id="cfg-markup" class="revenue-value">—%</div>
+          <div class="text-xs text-gray mt-1">Added to base fare transparently</div>
+        </div>
+        <div class="card card-body" style="background:var(--gray-50);">
+          <div class="text-xs text-gray">DEFAULT_SERVICE_FEE_USD</div>
+          <div id="cfg-fee" class="revenue-value">$—</div>
+          <div class="text-xs text-gray mt-1">Flat fee per booking</div>
+        </div>
+        <div class="card card-body" style="background:var(--gray-50);">
+          <div class="text-xs text-gray">DEFAULT_COMMISSION_PERCENT</div>
+          <div id="cfg-commission" class="revenue-value">—%</div>
+          <div class="text-xs text-gray mt-1">Earned from partners per booking</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-body mt-3">
+      <h3 class="mb-2">B2B White-Label</h3>
+      <p class="text-sm text-gray">License the Airfinder platform to travel agencies as a white-label product.</p>
+      <div class="alert alert-info mt-2">B2B licensing requires custom domain + API key configuration. Contact your developer to enable.</div>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireRole('super_admin')) return;
+  try {
+    const s = await api.get('/admin/settings');
+    document.getElementById('cfg-markup').textContent = `${s.markup_percent}%`;
+    document.getElementById('cfg-fee').textContent = `$${s.service_fee_usd}`;
+    document.getElementById('cfg-commission').textContent = `${s.commission_percent}%`;
+    document.getElementById('settings-body').innerHTML = `
+      <div class="price-line"><span>Markup</span><span>${s.markup_percent}% of base fare</span></div>
+      <div class="price-line"><span>Service Fee</span><span>$${s.service_fee_usd} per booking</span></div>
+      <div class="price-line"><span>Commission</span><span>${s.commission_percent}% of base fare</span></div>`;
+  } catch { document.getElementById('settings-body').innerHTML = '<p class="text-gray">Could not load settings.</p>'; }
+});
+</script>
+</body>
+</html>

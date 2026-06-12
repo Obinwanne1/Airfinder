@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="/" class="auth-logo-text">✈ Airfinder</a>
+      <div class="auth-logo-sub">Fly Smart, Pay Fair</div>
+    </div>
+    <h2 class="auth-title">Create your account</h2>
+    <p class="auth-sub">Start booking flights with full price transparency</p>
+
+    <div id="alert"></div>
+
+    <form id="register-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input class="form-control" id="first_name" placeholder="John" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input class="form-control" id="last_name" placeholder="Doe" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" id="email" type="email" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone (optional)</label>
+        <input class="form-control" id="phone" placeholder="+234 800 000 0000" type="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-toggle">
+          <input class="form-control" id="password" type="password" placeholder="Min 8 characters" required>
+          <button type="button" class="toggle-btn" id="toggle-pw">👁</button>
+        </div>
+        <div class="strength-bar mt-1"><div class="strength-fill" id="strength-fill" style="width:0;background:var(--red);"></div></div>
+        <div class="text-xs text-gray mt-1" id="strength-label"></div>
+      </div>
+      <button class="btn btn-primary btn-full mt-2" type="submit" id="submit-btn">Create Account</button>
+    </form>
+
+    <div class="auth-footer mt-2">
+      Already have an account? <a href="/auth/login.html">Sign in</a>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.redirectIfLoggedIn();
+
+  document.getElementById('toggle-pw').addEventListener('click', () => {
+    const pw = document.getElementById('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('password').addEventListener('input', function() {
+    const v = this.value;
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['', 'var(--red)', 'var(--amber)', 'var(--green-light)', 'var(--green)'];
+    document.getElementById('strength-fill').style.width = `${score * 25}%`;
+    document.getElementById('strength-fill').style.background = colors[score];
+    document.getElementById('strength-label').textContent = labels[score];
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Creating account...';
+    clearAlert();
+    try {
+      const data = await api.post('/auth/register', {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        phone: document.getElementById('phone').value,
+      });
+      Auth.save(data.token, { ...data.user, role: 'customer' });
+      window.location.href = '/account/dashboard.html';
+    } catch (e) {
+      showAlert(e.message || 'Registration failed');
+      btn.disabled = false; btn.textContent = 'Create Account';
+    }
+  });
+});
+function showAlert(msg) { document.getElementById('alert').innerHTML = `<div class="alert alert-error">${msg}</div>`; }
+function clearAlert() { document.getElementById('alert').innerHTML = ''; }
+</script>
+</body>
+</html>

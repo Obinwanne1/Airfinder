@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Flight — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+    <div class="navbar-links">
+      <a href="javascript:history.back()" class="navbar-link">← Back to Results</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:32px;padding-bottom:60px;">
+  <!-- Steps -->
+  <div class="booking-steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div><div class="step-label">Passengers</div></div>
+    <div class="step-connector"></div>
+    <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Add-ons</div></div>
+    <div class="step-connector"></div>
+    <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Payment</div></div>
+  </div>
+
+  <div class="booking-layout">
+    <!-- Left: Form -->
+    <div>
+      <div id="alert-container"></div>
+
+      <!-- Flight Summary -->
+      <div class="card card-body mb-3" id="flight-summary">
+        <p class="text-gray">Loading flight details...</p>
+      </div>
+
+      <!-- Step 1: Passengers -->
+      <div id="step-panel-1">
+        <h3 class="mb-2">Passenger Details</h3>
+        <div id="passengers-container"></div>
+        <button class="btn btn-primary mt-3" id="next-to-addons">Continue to Add-ons →</button>
+      </div>
+
+      <!-- Step 2: Add-ons -->
+      <div id="step-panel-2" class="hidden">
+        <h3 class="mb-2">Select Add-ons</h3>
+        <div class="card card-body mb-3">
+          <h4 class="mb-2">🧳 Baggage</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label class="filter-option"><input type="radio" name="baggage" value="carry_on" checked> Carry-on only — Free</label>
+            <label class="filter-option"><input type="radio" name="baggage" value="checked_1"> 1 Checked bag — $35 per passenger</label>
+            <label class="filter-option"><input type="radio" name="baggage" value="checked_2"> 2 Checked bags — $60 per passenger</label>
+          </div>
+        </div>
+        <div class="card card-body mb-3">
+          <h4 class="mb-2">💺 Seat Preference</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label class="filter-option"><input type="radio" name="seat" value="standard" checked> Standard — Free</label>
+            <label class="filter-option"><input type="radio" name="seat" value="window"> Window seat — $15 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="aisle"> Aisle seat — $10 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="extra_legroom"> Extra legroom — $45 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="front_row"> Front row — $30 per passenger</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary" id="next-to-payment">Continue to Payment →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Payment -->
+      <div id="step-panel-3" class="hidden">
+        <h3 class="mb-2">Payment Details</h3>
+        <div class="alert alert-info">🔒 Demo mode — no real payment processed. Click "Complete Booking" to confirm.</div>
+        <div class="card card-body mb-3">
+          <div class="form-group">
+            <label class="form-label">Cardholder Name</label>
+            <input class="form-control" id="card-name" placeholder="John Doe">
+          </div>
+          <div class="form-group card-input-group">
+            <label class="form-label">Card Number</label>
+            <input class="form-control" id="card-number" placeholder="4242 4242 4242 4242" maxlength="19">
+            <div class="card-icons">
+              <div class="card-icon">VISA</div>
+              <div class="card-icon">MC</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Expiry</label>
+              <input class="form-control" id="card-expiry" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVV</label>
+              <input class="form-control" id="card-cvv" placeholder="123" maxlength="4" type="password">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button class="btn btn-primary" id="complete-booking-btn" style="flex:1;">✅ Complete Booking</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Price Summary -->
+    <div>
+      <div class="price-summary-card">
+        <div class="price-summary-title">💰 Price Summary</div>
+        <div id="price-breakdown">
+          <p class="text-gray text-sm">Loading...</p>
+        </div>
+        <div class="price-transparency mt-2">
+          🔍 <strong>Full transparency:</strong> Every charge is shown here. No fees added at checkout.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+let flight = null;
+let passengerCount = 1;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.requireLogin()) return;
+
+  const raw = sessionStorage.getItem('af_flight');
+  if (!raw) { window.location.href = '/'; return; }
+  flight = JSON.parse(raw);
+  passengerCount = flight.passengers || 1;
+
+  renderFlightSummary();
+  renderPassengerForms();
+  updatePriceSummary();
+
+  // Add-on change listeners
+  document.querySelectorAll('input[name=baggage], input[name=seat]').forEach(el => {
+    el.addEventListener('change', updatePriceSummary);
+  });
+
+  document.getElementById('next-to-addons').addEventListener('click', validatePassengers);
+  document.getElementById('next-to-payment').addEventListener('click', () => goToStep(3));
+  document.getElementById('complete-booking-btn').addEventListener('click', completeBooking);
+
+  // Card formatting
+  document.getElementById('card-number').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
+  });
+  document.getElementById('card-expiry').addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
+  });
+});
+
+function renderFlightSummary() {
+  const p = flight.pricing;
+  document.getElementById('flight-summary').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:1.2rem;font-weight:800;">${flight.origin} → ${flight.destination}</div>
+        <div class="text-gray text-sm">${flight.airline} · ${flight.flight_number} · ${flight.departure_date}</div>
+        <div class="text-gray text-sm">${flight.departure_time} → ${flight.arrival_time} · ${flight.cabin}</div>
+        ${flight.is_africa_route ? '<span class="badge badge-green mt-1">✈ Africa Direct</span>' : ''}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:1.4rem;font-weight:900;color:var(--green);">$${p.total.toFixed(2)}</div>
+        <div class="text-gray text-sm">for ${passengerCount} passenger${passengerCount>1?'s':''}</div>
+      </div>
+    </div>`;
+}
+
+function renderPassengerForms() {
+  const container = document.getElementById('passengers-container');
+  container.innerHTML = '';
+  for (let i = 0; i < passengerCount; i++) {
+    container.innerHTML += `
+      <div class="passenger-block">
+        <div class="passenger-title">Passenger ${i+1}${i === 0 ? ' (Primary)' : ''}</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-control pax-first" data-pax="${i}" placeholder="John" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-control pax-last" data-pax="${i}" placeholder="Doe" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input class="form-control pax-dob" data-pax="${i}" type="date" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Passport Number</label>
+            <input class="form-control pax-passport" data-pax="${i}" placeholder="A1234567" required>
+          </div>
+        </div>
+        ${i === 0 ? `
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-control pax-email" data-pax="0" type="email" placeholder="john@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-control pax-phone" data-pax="0" placeholder="+234 800 000 0000">
+          </div>
+        </div>` : ''}
+      </div>`;
+  }
+}
+
+function validatePassengers() {
+  const firsts = document.querySelectorAll('.pax-first');
+  const lasts = document.querySelectorAll('.pax-last');
+  for (let i = 0; i < passengerCount; i++) {
+    if (!firsts[i].value.trim() || !lasts[i].value.trim()) {
+      showAlert('Please fill in all passenger names.', 'error'); return;
+    }
+  }
+  goToStep(2);
+}
+
+function goToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`step-panel-${i}`).classList.toggle('hidden', i !== n);
+    const stepEl = document.getElementById(`step-${i}`);
+    stepEl.classList.toggle('active', i === n);
+    stepEl.classList.toggle('done', i < n);
+  });
+  updatePriceSummary();
+  window.scrollTo(0, 0);
+}
+
+function getAddons() {
+  const baggage = document.querySelector('input[name=baggage]:checked')?.value || 'carry_on';
+  const seat = document.querySelector('input[name=seat]:checked')?.value || 'standard';
+  return { baggage, seat };
+}
+
+async function updatePriceSummary() {
+  const { baggage, seat } = getAddons();
+  try {
+    const pricing = await api.post('/flights/pricing/calculate', {
+      base_fare: flight.pricing.base_fare,
+      passengers: passengerCount,
+      baggage, seat,
+    });
+    renderPriceBreakdown(pricing);
+  } catch {
+    renderPriceBreakdown(flight.pricing);
+  }
+}
+
+function renderPriceBreakdown(p) {
+  document.getElementById('price-breakdown').innerHTML = `
+    <div class="price-line"><span>Base fare (×${p.passengers || passengerCount})</span><span>$${(p.base_fare * (p.passengers || passengerCount)).toFixed(2)}</span></div>
+    <div class="price-line"><span>Markup (${p.markup_pct || 8}%)</span><span>$${(p.markup * (p.passengers || passengerCount)).toFixed(2)}</span></div>
+    <div class="price-line"><span>Service fee</span><span>$${p.service_fee.toFixed(2)}</span></div>
+    ${p.baggage_fee > 0 ? `<div class="price-line"><span>Baggage</span><span>$${p.baggage_fee.toFixed(2)}</span></div>` : ''}
+    ${p.seat_fee > 0 ? `<div class="price-line"><span>Seat selection</span><span>$${p.seat_fee.toFixed(2)}</span></div>` : ''}
+    <div class="price-line total"><span>Total</span><span style="color:var(--green);">$${p.total.toFixed(2)}</span></div>
+    <div class="text-xs text-gray" style="margin-top:8px;">We earn: commission $${p.commission?.toFixed(2) || '—'} + service fee $${p.service_fee.toFixed(2)}</div>`;
+}
+
+function getPassengers() {
+  const passengers = [];
+  document.querySelectorAll('.pax-first').forEach((el, i) => {
+    passengers.push({
+      first_name: el.value.trim(),
+      last_name: document.querySelectorAll('.pax-last')[i].value.trim(),
+      dob: document.querySelectorAll('.pax-dob')[i].value,
+      passport: document.querySelectorAll('.pax-passport')[i].value.trim(),
+    });
+  });
+  return passengers;
+}
+
+async function completeBooking() {
+  const btn = document.getElementById('complete-booking-btn');
+  btn.disabled = true; btn.textContent = 'Processing...';
+
+  const { baggage, seat } = getAddons();
+  const pricingRes = await api.post('/flights/pricing/calculate', {
+    base_fare: flight.pricing.base_fare, passengers: passengerCount, baggage, seat,
+  });
+
+  try {
+    const result = await api.post('/bookings', {
+      flight_id: flight.id,
+      origin: flight.origin,
+      destination: flight.destination,
+      departure_date: flight.departure_date,
+      airline: flight.airline,
+      flight_number: flight.flight_number,
+      cabin: flight.cabin,
+      base_fare: flight.pricing.base_fare,
+      passengers: getPassengers(),
+      baggage, seat,
+    });
+    sessionStorage.setItem('af_booking', JSON.stringify(result.booking));
+    sessionStorage.removeItem('af_flight');
+    window.location.href = '/confirmation.html';
+  } catch (e) {
+    showAlert(e.message || 'Booking failed. Please try again.', 'error');
+    btn.disabled = false; btn.textContent = '✅ Complete Booking';
+  }
+}
+
+function showAlert(msg, type = 'error') {
+  document.getElementById('alert-container').innerHTML =
+    `<div class="alert alert-${type}">${msg}</div>`;
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

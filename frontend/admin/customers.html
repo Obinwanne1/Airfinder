@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link active"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link" data-role-only="super_admin,admin"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar"><div class="admin-page-title">Customer Management</div></div>
+  <div class="admin-content">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="toolbar-search">
+          <span class="toolbar-search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search by name or email...">
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Total Spent</th><th>Joined</th><th>Status</th></tr></thead>
+          <tbody id="customers-tbody"><tr><td colspan="7"><div class="spinner" style="margin:16px auto;"></div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+let currentPage = 1;
+let searchTimer;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Auth.requireStaff()) return;
+  loadCustomers();
+  document.getElementById('search-input').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { currentPage = 1; loadCustomers(this.value); }, 300);
+  });
+});
+
+async function loadCustomers(search = '') {
+  try {
+    const data = await Admin.loadCustomers(currentPage, search);
+    renderCustomers(data.customers);
+    renderPagination(data.pages, data.page);
+  } catch { document.getElementById('customers-tbody').innerHTML = '<tr><td colspan="7" class="text-gray">Failed to load.</td></tr>'; }
+}
+
+function renderCustomers(customers) {
+  if (!customers.length) { document.getElementById('customers-tbody').innerHTML = '<tr><td colspan="7" class="text-gray" style="text-align:center;padding:20px;">No customers found.</td></tr>'; return; }
+  document.getElementById('customers-tbody').innerHTML = customers.map(c => `
+    <tr>
+      <td><strong>${c.first_name} ${c.last_name}</strong></td>
+      <td>${c.email}</td>
+      <td>${c.phone || '—'}</td>
+      <td>${c.booking_count}</td>
+      <td>${Admin.formatCurrency(c.total_spent)}</td>
+      <td class="text-sm text-gray">${new Date(c.created_at).toLocaleDateString()}</td>
+      <td>${c.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}</td>
+    </tr>`).join('');
+}
+
+function renderPagination(pages, current) {
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="changePage(${current-1})" ${current<=1?'disabled':''}>← Prev</button>`;
+  for (let i = 1; i <= Math.min(pages, 10); i++) html += `<button class="page-btn ${i===current?'active':''}" onclick="changePage(${i})">${i}</button>`;
+  html += `<button class="page-btn" onclick="changePage(${current+1})" ${current>=pages?'disabled':''}>Next →</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function changePage(p) { currentPage = p; loadCustomers(document.getElementById('search-input').value); }
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+import jwt
+import bcrypt
+import uuid
+import secrets
+from datetime import datetime, timedelta
+from flask import Blueprint, request, jsonify, current_app, g
+from backend.models.database import db
+from backend.models.user import User
+from backend.middleware.jwt_guard import jwt_required
+from backend.services.email_service import send_welcome_email, send_password_reset_email
+
+bp = Blueprint('auth_customer', __name__, url_prefix='/api/auth')
+
+@bp.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    required = ['email', 'password', 'first_name', 'last_name']
+    if not all(data.get(f) for f in required):
+        return jsonify({'error': 'All fields required: email, password, first_name, last_name'}), 400
+
+    if User.query.filter_by(email=data['email'].lower()).first():
+        return jsonify({'error': 'Email already registered'}), 409
+
+    if len(data['password']) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+    hashed = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+    verification_token = secrets.token_urlsafe(32)
+
+    user = User(
+        email=data['email'].lower(),
+        password_hash=hashed.decode('utf-8'),
+        first_name=data['first_name'],
+        last_name=data['last_name'],
+        phone=data.get('phone'),
+        verification_token=verification_token,
+        is_verified=True,  # Auto-verify for demo; set False + send email for production
+    )
+    db.session.add(user)
+    db.session.commit()
+
+    send_welcome_email(user.email, user.first_name)
+    token = _generate_token(user.id, 'customer')
+
+    return jsonify({
+        'message': 'Account created successfully',
+        'token': token,
+        'user': user.to_dict()
+    }), 201
+
+@bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if not data.get('email') or not data.get('password'):
+        return jsonify({'error': 'Email and password required'}), 400
+
+    user = User.query.filter_by(email=data['email'].lower()).first()
+    if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user.password_hash.encode('utf-8')):
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+    if not user.is_active:
+        return jsonify({'error': 'Account deactivated. Contact support.'}), 403
+
+    token = _generate_token(user.id, 'customer')
+    return jsonify({'token': token, 'user': user.to_dict()})
+
+@bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email', '').lower()
+    user = User.query.filter_by(email=email).first()
+
+    # Always return success to prevent email enumeration
+    if not user:
+        return jsonify({'message': 'If that email exists, a reset link was sent.'})
+
+    token = secrets.token_urlsafe(32)
+    user.reset_token = token
+    user.reset_token_expiry = datetime.utcnow() + timedelta(minutes=15)
+    db.session.commit()
+
+    base_url = request.host_url.rstrip('/')
+    reset_link = f"{base_url}/auth/reset-password.html?token={token}"
+    send_password_reset_email(user.email, user.first_name, reset_link)
+
+    return jsonify({'message': 'If that email exists, a reset link was sent.'})
+
+@bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+    token = data.get('token')
+    new_password = data.get('password')
+
+    if not token or not new_password:
+        return jsonify({'error': 'Token and new password required'}), 400
+
+    if len(new_password) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+    user = User.query.filter_by(reset_token=token).first()
+    if not user:
+        return jsonify({'error': 'Invalid or expired token'}), 400
+
+    if user.reset_token_expiry < datetime.utcnow():
+        return jsonify({'error': 'Reset link has expired. Request a new one.'}), 400
+
+    hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    user.password_hash = hashed.decode('utf-8')
+    user.reset_token = None
+    user.reset_token_expiry = None
+    db.session.commit()
+
+    return jsonify({'message': 'Password reset successfully. You can now log in.'})
+
+@bp.route('/me', methods=['GET'])
+@jwt_required
+def me():
+    user = User.query.get(g.user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify(user.to_dict())
+
+def _generate_token(user_id: str, role: str, must_change_password=False) -> str:
+    payload = {
+        'user_id': user_id,
+        'role': role,
+        'must_change_password': must_change_password,
+        'exp': datetime.utcnow() + timedelta(hours=24),
+    }
+    return jwt.encode(payload, current_app.config['JWT_SECRET'], algorithm='HS256')

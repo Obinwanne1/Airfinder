@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Confirmed — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+  </div>
+</nav>
+<div class="container" style="padding:60px 20px;max-width:580px;">
+  <div style="text-align:center;">
+    <div class="confirmation-icon">✓</div>
+    <h1 style="margin-bottom:8px;">Booking Confirmed!</h1>
+    <p class="text-gray">A confirmation has been sent to your email.</p>
+  </div>
+  <div class="card card-body mt-4" id="booking-details">
+    <p class="text-gray">Loading...</p>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:24px;justify-content:center;flex-wrap:wrap;">
+    <a href="/account/bookings.html" class="btn btn-primary">View My Bookings</a>
+    <a href="/" class="btn btn-secondary">Book Another Flight</a>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const raw = sessionStorage.getItem('af_booking');
+  if (!raw) { window.location.href = '/'; return; }
+  const b = JSON.parse(raw);
+  const p = b.pricing;
+  document.getElementById('booking-details').innerHTML = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:1.2rem;font-weight:800;">${b.origin} → ${b.destination}</div>
+        <div class="text-gray text-sm">${b.airline} · ${b.flight_number || ''} · ${b.departure_date}</div>
+      </div>
+      <span class="badge badge-green" style="height:fit-content;">Confirmed</span>
+    </div>
+    <div class="price-line"><span>Reference</span><span class="td-mono">${b.reference}</span></div>
+    <div class="price-line"><span>Cabin</span><span>${b.cabin_class}</span></div>
+    <div class="price-line"><span>Passengers</span><span>${b.passenger_count}</span></div>
+    <hr class="divider">
+    <div class="price-line"><span>Base fare</span><span>$${p.base_fare?.toFixed(2)}</span></div>
+    <div class="price-line"><span>Markup</span><span>$${p.markup?.toFixed(2)}</span></div>
+    <div class="price-line"><span>Service fee</span><span>$${p.service_fee?.toFixed(2)}</span></div>
+    ${p.baggage_fee > 0 ? `<div class="price-line"><span>Baggage</span><span>$${p.baggage_fee?.toFixed(2)}</span></div>` : ''}
+    <div class="price-line total"><span>Total Paid</span><span style="color:var(--green);">$${p.total?.toFixed(2)}</span></div>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Bookings — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link active"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link" data-role-only="super_admin,admin"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar"><div class="admin-page-title">All Bookings</div></div>
+  <div class="admin-content">
+    <div id="alert-container"></div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <select class="toolbar-select" id="status-filter">
+          <option value="">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
+        </select>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Reference</th><th>Customer</th><th>Route</th><th>Date</th><th>Airline</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="bookings-tbody"><tr><td colspan="8"><div class="spinner" style="margin:16px auto;"></div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireStaff()) return;
+  loadBookings();
+  document.getElementById('status-filter').addEventListener('change', () => { currentPage = 1; loadBookings(); });
+});
+
+async function loadBookings() {
+  const status = document.getElementById('status-filter').value;
+  try {
+    const data = await Admin.loadAllBookings(currentPage, status);
+    renderBookings(data.bookings);
+    renderPagination(data.pages, data.page);
+  } catch { document.getElementById('bookings-tbody').innerHTML = '<tr><td colspan="8" class="text-gray">Failed to load.</td></tr>'; }
+}
+
+function renderBookings(bookings) {
+  if (!bookings.length) { document.getElementById('bookings-tbody').innerHTML = '<tr><td colspan="8" class="text-gray" style="text-align:center;padding:20px;">No bookings found.</td></tr>'; return; }
+  document.getElementById('bookings-tbody').innerHTML = bookings.map(b => `
+    <tr>
+      <td class="td-mono">${b.reference}</td>
+      <td class="text-sm">${b.user_id?.slice(0,8)}...</td>
+      <td><strong>${b.origin} → ${b.destination}</strong></td>
+      <td>${b.departure_date}</td>
+      <td class="text-sm">${b.airline}</td>
+      <td><strong>${Admin.formatCurrency(b.pricing.total)}</strong></td>
+      <td>${Admin.statusBadge(b.status)}</td>
+      <td>
+        <select onchange="updateStatus('${b.id}',this.value)" style="padding:4px 8px;border:1px solid var(--gray-200);border-radius:4px;font-size:12px;">
+          <option value="">Change...</option>
+          <option value="confirmed">Confirm</option>
+          <option value="cancelled">Cancel</option>
+          <option value="refunded">Refund</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function renderPagination(pages, current) {
+  if (pages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  let html = `<button class="page-btn" onclick="changePage(${current-1})" ${current<=1?'disabled':''}>← Prev</button>`;
+  for (let i = 1; i <= pages; i++) html += `<button class="page-btn ${i===current?'active':''}" onclick="changePage(${i})">${i}</button>`;
+  html += `<button class="page-btn" onclick="changePage(${current+1})" ${current>=pages?'disabled':''}>Next →</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function changePage(p) { currentPage = p; loadBookings(); }
+
+async function updateStatus(id, status) {
+  if (!status) return;
+  try {
+    await Admin.updateBooking(id, { status });
+    Admin.showToast(`Booking status updated to ${status}`);
+    loadBookings();
+  } catch (e) { Admin.showToast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>

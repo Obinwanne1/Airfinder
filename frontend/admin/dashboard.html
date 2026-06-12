@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+
+<!-- Sidebar -->
+<aside class="admin-sidebar" id="sidebar">
+  <div class="admin-sidebar-logo">
+    <div class="admin-logo-text">✈ Airfinder</div>
+    <div class="admin-logo-sub">Staff Portal</div>
+  </div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link active"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section" data-role-only="super_admin,admin">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link" data-role-only="super_admin,admin"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link" data-role-only="super_admin,admin,finance"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info">
+      <div class="admin-avatar-sm" id="sidebar-avatar">SA</div>
+      <div>
+        <div class="admin-user-name" id="sidebar-name">Loading...</div>
+        <div class="admin-user-role" id="sidebar-role">—</div>
+      </div>
+    </div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div class="admin-page-title">Dashboard</div>
+    <div class="admin-topbar-actions">
+      <a href="/" target="_blank" class="btn btn-secondary btn-sm">🌐 View Site</a>
+    </div>
+  </div>
+  <div class="admin-content">
+    <div id="alert-container"></div>
+
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card"><div class="spinner"></div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:4px;" id="tables-row">
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">Recent Bookings</div>
+          <a href="/admin/bookings.html" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Ref</th><th>Route</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody id="recent-bookings-tbody"><tr><td colspan="4"><div class="spinner" style="margin:12px auto;"></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="table-card-title">Recent Customers</div>
+          <a href="/admin/customers.html" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Bookings</th></tr></thead>
+            <tbody id="recent-customers-tbody"><tr><td colspan="3"><div class="spinner" style="margin:12px auto;"></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireStaff()) return;
+
+  const [dashData, bookingsData, customersData] = await Promise.all([
+    Admin.loadDashboard().catch(() => null),
+    Admin.loadAllBookings(1).catch(() => null),
+    Admin.loadCustomers(1).catch(() => null),
+  ]);
+
+  if (dashData) {
+    const b = dashData.bookings;
+    const r = dashData.revenue;
+    let html = `
+      <div class="stat-card green"><div class="stat-label">Total Bookings</div><div class="stat-value">${b.total}</div><div class="stat-icon">🎫</div></div>
+      <div class="stat-card blue"><div class="stat-label">Confirmed</div><div class="stat-value">${b.confirmed}</div><div class="stat-icon">✅</div></div>
+      <div class="stat-card amber"><div class="stat-label">Total Revenue</div><div class="stat-value">${Admin.formatCurrency(r.total_usd)}</div><div class="stat-icon">💰</div></div>
+      <div class="stat-card green"><div class="stat-label">Total Customers</div><div class="stat-value">${dashData.customers}</div><div class="stat-icon">👥</div></div>`;
+    if (dashData.staff !== undefined) {
+      html += `<div class="stat-card"><div class="stat-label">Staff Members</div><div class="stat-value">${dashData.staff}</div><div class="stat-icon">🏢</div></div>`;
+    }
+    document.getElementById('stat-grid').innerHTML = html;
+  }
+
+  if (bookingsData?.bookings) {
+    document.getElementById('recent-bookings-tbody').innerHTML =
+      bookingsData.bookings.slice(0,8).map(b => `
+        <tr>
+          <td class="td-mono">${b.reference}</td>
+          <td>${b.origin}→${b.destination}</td>
+          <td>${Admin.formatCurrency(b.pricing.total)}</td>
+          <td>${Admin.statusBadge(b.status)}</td>
+        </tr>`).join('') || '<tr><td colspan="4" class="text-gray">No bookings</td></tr>';
+  }
+
+  if (customersData?.customers) {
+    document.getElementById('recent-customers-tbody').innerHTML =
+      customersData.customers.slice(0,8).map(c => `
+        <tr>
+          <td>${c.first_name} ${c.last_name}</td>
+          <td class="text-sm">${c.email}</td>
+          <td>${c.booking_count}</td>
+        </tr>`).join('') || '<tr><td colspan="3" class="text-gray">No customers</td></tr>';
+  }
+});
+</script>
+</body>
+</html>

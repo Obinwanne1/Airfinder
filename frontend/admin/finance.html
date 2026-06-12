@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link" data-role-only="super_admin,admin"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link active"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar"><div class="admin-page-title">Finance Dashboard</div></div>
+  <div class="admin-content">
+    <div class="revenue-grid" id="revenue-grid">
+      <div class="stat-card"><div class="spinner"></div></div>
+    </div>
+    <div class="table-card mt-3">
+      <div class="table-card-header"><div class="table-card-title">Revenue Breakdown</div></div>
+      <div class="card-body" id="breakdown-body">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <div class="card card-body mt-3">
+      <h4 class="mb-2">Revenue Transparency</h4>
+      <p class="text-sm text-gray">Airfinder earns through a combination of transparent commission, markup, and service fees. All amounts shown are confirmed bookings only.</p>
+      <div class="chart-placeholder mt-3">📈 Revenue chart — connect to analytics API for real-time data</div>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireRole('super_admin', 'admin', 'finance')) return;
+  try {
+    const data = await Admin.loadFinance();
+    document.getElementById('revenue-grid').innerHTML = `
+      <div class="revenue-card"><div class="revenue-label">Total Revenue</div><div class="revenue-value">${Admin.formatCurrency(data.total_revenue_usd)}</div></div>
+      <div class="revenue-card"><div class="revenue-label">Commission Earned</div><div class="revenue-value">${Admin.formatCurrency(data.commission_usd)}</div></div>
+      <div class="revenue-card"><div class="revenue-label">Markup Revenue</div><div class="revenue-value">${Admin.formatCurrency(data.markup_usd)}</div></div>
+      <div class="revenue-card"><div class="revenue-label">Service Fees</div><div class="revenue-value">${Admin.formatCurrency(data.service_fees_usd)}</div></div>
+      <div class="revenue-card"><div class="revenue-label">Baggage Fees</div><div class="revenue-value">${Admin.formatCurrency(data.baggage_fees_usd)}</div></div>
+      <div class="revenue-card"><div class="revenue-label">Confirmed Bookings</div><div class="revenue-value">${data.total_bookings}</div></div>`;
+    document.getElementById('breakdown-body').innerHTML = `
+      <div class="price-line"><span>Average booking value</span><span><strong>${Admin.formatCurrency(data.avg_booking_value)}</strong></span></div>
+      <div class="price-line"><span>Commission (3% of base fare)</span><span>${Admin.formatCurrency(data.commission_usd)}</span></div>
+      <div class="price-line"><span>Markup (8% of base fare)</span><span>${Admin.formatCurrency(data.markup_usd)}</span></div>
+      <div class="price-line"><span>Service fee ($15/booking)</span><span>${Admin.formatCurrency(data.service_fees_usd)}</span></div>
+      <div class="price-line"><span>Baggage fees</span><span>${Admin.formatCurrency(data.baggage_fees_usd)}</span></div>
+      <hr class="divider">
+      <div class="price-line total"><span>Total Airfinder Earnings</span><span style="color:var(--green);">${Admin.formatCurrency(data.total_revenue_usd)}</span></div>`;
+  } catch (e) {
+    document.getElementById('revenue-grid').innerHTML = '<p class="text-gray">No data yet. Make some bookings first!</p>';
+    document.getElementById('breakdown-body').innerHTML = '';
+  }
+});
+</script>
+</body>
+</html>

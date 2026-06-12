@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Login — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="auth-page" style="background:linear-gradient(135deg,#1f2937 0%,#374151 100%);">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-text" style="color:var(--green);">✈ Airfinder</div>
+      <div class="auth-logo-sub">Staff Portal — Authorized Access Only</div>
+    </div>
+    <h2 class="auth-title">Staff Sign In</h2>
+    <p class="auth-sub">Use your company credentials provided by your administrator.</p>
+    <div id="alert"></div>
+    <form id="staff-login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" id="email" type="email" placeholder="your@airfinder.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-toggle">
+          <input class="form-control" id="password" type="password" placeholder="Your password" required autocomplete="current-password">
+          <button type="button" class="toggle-btn" id="toggle-pw">👁</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full mt-2" type="submit" id="submit-btn">Sign In to Staff Portal</button>
+    </form>
+    <div class="auth-footer mt-3">
+      <a href="/" class="text-sm text-gray">← Customer site</a>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Redirect if already staff-logged in
+  if (Auth.isLoggedIn() && Auth.isStaff()) {
+    window.location.href = '/admin/dashboard.html';
+    return;
+  }
+
+  document.getElementById('toggle-pw').addEventListener('click', () => {
+    const pw = document.getElementById('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('staff-login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    clearAlert();
+    try {
+      const data = await api.post('/staff/auth/login', {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      });
+      Auth.saveStaff(data.token, data.staff);
+
+      if (data.must_change_password) {
+        window.location.href = '/admin/change-password.html';
+      } else {
+        window.location.href = '/admin/dashboard.html';
+      }
+    } catch (e) {
+      showAlert(e.message || 'Login failed. Check your credentials.');
+      btn.disabled = false; btn.textContent = 'Sign In to Staff Portal';
+    }
+  });
+});
+function showAlert(msg) { document.getElementById('alert').innerHTML = `<div class="alert alert-error">${msg}</div>`; }
+function clearAlert() { document.getElementById('alert').innerHTML = ''; }
+</script>
+</body>
+</html>

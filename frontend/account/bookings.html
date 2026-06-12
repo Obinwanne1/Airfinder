@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bookings — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+    <div class="navbar-links">
+      <a href="/" class="navbar-link">Search Flights</a>
+      <a href="#" class="navbar-link" data-auth-logout>Logout</a>
+    </div>
+  </div>
+</nav>
+<div class="container">
+  <div class="account-layout">
+    <aside class="account-sidebar">
+      <div class="account-avatar" id="avatar">JD</div>
+      <div class="account-name" id="user-name">Loading...</div>
+      <div class="account-email" id="user-email"></div>
+      <ul class="account-nav">
+        <li><a href="/account/dashboard.html">🏠 Dashboard</a></li>
+        <li><a href="/account/bookings.html" class="active">🎫 My Bookings</a></li>
+        <li><a href="/">✈ Search Flights</a></li>
+        <li><a href="#" data-auth-logout>🚪 Logout</a></li>
+      </ul>
+    </aside>
+    <main>
+      <div class="flex-between mb-3">
+        <h2>My Bookings</h2>
+        <a href="/" class="btn btn-primary btn-sm">+ New Booking</a>
+      </div>
+      <div id="alert"></div>
+      <div id="bookings-list"><div class="spinner"></div></div>
+    </main>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireLogin()) return;
+  const user = Auth.getUser();
+  document.getElementById('avatar').textContent = (user.first_name?.[0]||'') + (user.last_name?.[0]||'');
+  document.getElementById('user-name').textContent = `${user.first_name} ${user.last_name}`;
+  document.getElementById('user-email').textContent = user.email;
+
+  try {
+    const bookings = await api.get('/bookings');
+    if (bookings.length === 0) {
+      document.getElementById('bookings-list').innerHTML = '<div class="card card-body text-center"><p class="text-gray">No bookings yet.</p><a href="/" class="btn btn-primary mt-2">Search Flights</a></div>';
+      return;
+    }
+    document.getElementById('bookings-list').innerHTML = bookings.map(b => `
+      <div class="booking-card">
+        <div class="booking-card-header">
+          <span class="booking-ref">${b.reference}</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="badge ${b.status === 'confirmed' ? 'badge-green' : b.status === 'cancelled' ? 'badge-red' : 'badge-amber'}">${b.status}</span>
+            ${b.status === 'confirmed' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking('${b.id}')">Cancel</button>` : ''}
+          </div>
+        </div>
+        <div class="booking-card-body">
+          <div class="booking-route">${b.origin} → ${b.destination}</div>
+          <div class="booking-detail">${b.airline}${b.flight_number ? ' · ' + b.flight_number : ''} · ${b.departure_date}</div>
+          <div class="booking-detail">Cabin: ${b.cabin_class} · Passengers: ${b.passenger_count}</div>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+            <span class="cost-item">Base $${b.pricing.base_fare?.toFixed(2)}</span>
+            <span class="cost-item">Fee $${b.pricing.service_fee?.toFixed(2)}</span>
+            <span class="cost-item highlight">Total $${b.pricing.total?.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch {
+    document.getElementById('bookings-list').innerHTML = '<p class="text-gray">Could not load bookings.</p>';
+  }
+});
+
+async function cancelBooking(id) {
+  if (!confirm('Cancel this booking?')) return;
+  try {
+    await api.post(`/bookings/${id}/cancel`, {});
+    document.getElementById('alert').innerHTML = '<div class="alert alert-success">Booking cancelled.</div>';
+    location.reload();
+  } catch (e) {
+    document.getElementById('alert').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  }
+}
+</script>
+</body>
+</html>

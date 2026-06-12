@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airfinder — Fly Smart, Pay Fair</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+    <div class="navbar-links">
+      <a href="/" class="navbar-link">Home</a>
+      <a href="/results.html" class="navbar-link">Search</a>
+      <a href="#transparency" class="navbar-link">About</a>
+      <a href="/auth/login.html" class="navbar-link" data-auth-login>Login</a>
+      <a href="/auth/register.html" class="btn btn-primary btn-sm" data-auth-login>Sign Up</a>
+      <a href="/account/dashboard.html" class="navbar-link hidden" data-auth-logout>My Trips</a>
+      <a href="#" class="navbar-link hidden" data-auth-logout>Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-eyebrow">
+      🌍 Global with Africa Focus &nbsp;|&nbsp; 🤖 AI-Powered Search
+    </div>
+    <h1>Find Flights.<br><em>See Every Fee.</em><br>Book With Confidence.</h1>
+    <p class="hero-sub">
+      The only flight search that shows your <strong>true total cost</strong> — base fare, markup, baggage, seat fees — before you click. No bait-and-switch. Ever.
+    </p>
+
+    <div class="trust-bar">
+      <div class="trust-item">✅ True Cost Engine</div>
+      <div class="trust-item">🔒 Verified OTA Partners</div>
+      <div class="trust-item">🌍 Africa Route Intelligence</div>
+      <div class="trust-item">🤖 AI Smart Search</div>
+    </div>
+
+    <!-- AI Search Bar -->
+    <div class="ai-search-bar" id="aiBar">
+      <span class="ai-icon">🤖</span>
+      <input type="text" id="aiInput" placeholder='Try: "cheap flight from Lagos to London next month"' autocomplete="off">
+      <span class="ai-badge">AI</span>
+      <button class="btn btn-primary btn-sm" id="aiSearchBtn">Search</button>
+    </div>
+
+    <div class="ai-divider">or search manually</div>
+
+    <!-- Search Form -->
+    <div class="search-form">
+      <div class="search-tabs">
+        <button class="search-tab active" data-tab="oneway">One Way</button>
+        <button class="search-tab" data-tab="roundtrip">Round Trip</button>
+      </div>
+      <div class="search-fields">
+        <div class="search-field">
+          <div class="search-field-label">From</div>
+          <span class="search-field-icon">✈</span>
+          <input class="form-control" type="text" id="origin" placeholder="Lagos (LOS)" list="airports-list">
+        </div>
+        <div class="search-field">
+          <div class="search-field-label">To</div>
+          <span class="search-field-icon">📍</span>
+          <input class="form-control" type="text" id="destination" placeholder="London (LHR)" list="airports-list">
+        </div>
+        <div class="search-field">
+          <div class="search-field-label">Date</div>
+          <span class="search-field-icon">📅</span>
+          <input class="form-control" type="date" id="departure_date">
+        </div>
+        <div class="search-field">
+          <div class="search-field-label">Passengers & Class</div>
+          <span class="search-field-icon">👤</span>
+          <select class="form-control" id="passengers_cabin">
+            <option value="1|economy">1 Passenger — Economy</option>
+            <option value="1|business">1 Passenger — Business</option>
+            <option value="1|first">1 Passenger — First</option>
+            <option value="2|economy">2 Passengers — Economy</option>
+            <option value="2|business">2 Passengers — Business</option>
+            <option value="3|economy">3 Passengers — Economy</option>
+            <option value="4|economy">4 Passengers — Economy</option>
+          </select>
+        </div>
+        <button class="search-btn" id="searchBtn">🔍 Search</button>
+      </div>
+      <div id="return-date-row" class="hidden" style="margin-top:12px;">
+        <div class="search-field" style="max-width:280px;">
+          <div class="search-field-label">Return Date</div>
+          <span class="search-field-icon">📅</span>
+          <input class="form-control" type="date" id="return_date">
+        </div>
+      </div>
+    </div>
+    <datalist id="airports-list"></datalist>
+  </div>
+</section>
+
+<!-- FEATURED ROUTES -->
+<section class="section">
+  <div class="container">
+    <h2 style="margin-bottom:8px;">✈ Popular Routes</h2>
+    <p class="text-gray mb-3">Top picks for African travelers — best prices updated daily</p>
+    <div class="featured-grid" id="featuredGrid">
+      <div class="spinner" style="margin:20px auto;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSPARENCY SECTION -->
+<section class="section transparency-section" id="transparency">
+  <div class="container">
+    <div class="text-center">
+      <h2>How Airfinder Earns — Full Transparency</h2>
+      <p class="text-gray mt-2">We believe you deserve to know exactly how we make money. No hidden agenda.</p>
+    </div>
+    <div class="earn-grid">
+      <div class="earn-card">
+        <div class="earn-icon">💰</div>
+        <div class="earn-label">Booking Commission</div>
+        <div class="earn-desc">We earn a small commission from airlines and OTA partners when you complete a booking. This is industry-standard and already included in the fare shown.</div>
+      </div>
+      <div class="earn-card">
+        <div class="earn-icon">📊</div>
+        <div class="earn-label">Fare Markup</div>
+        <div class="earn-desc">On some routes we buy wholesale fares and add a transparent markup. You'll always see this broken down in the True Cost panel before you pay.</div>
+      </div>
+      <div class="earn-card">
+        <div class="earn-icon">🎫</div>
+        <div class="earn-label">Service Fee</div>
+        <div class="earn-desc">A flat service fee covers our technology and support. It's shown clearly in the price breakdown — never hidden in the total.</div>
+      </div>
+      <div class="earn-card">
+        <div class="earn-icon">🏢</div>
+        <div class="earn-label">B2B Licensing</div>
+        <div class="earn-desc">Travel agencies can license the Airfinder platform to power their own search. This keeps Airfinder profitable without charging you more.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY AIRFINDER -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2>Why Airfinder Beats the Rest</h2>
+      <p class="text-gray mt-2">We built this after identifying every flaw in the top 5 flight search platforms.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+      <div class="card card-body">
+        <h4>🎯 True Cost Engine</h4>
+        <p class="text-sm text-gray mt-1">Google Flights, Skyscanner, and Momondo hide baggage and seat fees until you're almost done. We show everything upfront.</p>
+      </div>
+      <div class="card card-body">
+        <h4>🔒 OTA Trust Score</h4>
+        <p class="text-sm text-gray mt-1">Skyscanner's biggest complaint: fraudulent OTAs. Every booking provider on Airfinder is verified and rated — you see the score before you click.</p>
+      </div>
+      <div class="card card-body">
+        <h4>🤖 AI Smart Search</h4>
+        <p class="text-sm text-gray mt-1">Type naturally: "business class Abuja to Dubai next month under ₦800k" — our AI understands you and finds the best matches instantly.</p>
+      </div>
+      <div class="card card-body">
+        <h4>🌍 Africa Route Intelligence</h4>
+        <p class="text-sm text-gray mt-1">African routes are underserved on global platforms. We prioritize direct African carrier flights and highlight connection savings.</p>
+      </div>
+      <div class="card card-body">
+        <h4>👥 Group Booking Flow</h4>
+        <p class="text-sm text-gray mt-1">No platform solves group travel. Airfinder lets multiple travelers add details, compare options together, and book in one flow.</p>
+      </div>
+      <div class="card card-body">
+        <h4>⏱ 24-Hour Price Hold</h4>
+        <p class="text-sm text-gray mt-1">See a great fare but not ready to commit? Lock it for 24 hours for a small fee — a feature only Hopper has, now on metasearch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">✈ Airfinder</div>
+        <p class="footer-tagline">Fly Smart, Pay Fair.<br>The flight search platform that hides nothing.</p>
+      </div>
+      <div>
+        <div class="footer-title">Search</div>
+        <ul class="footer-links">
+          <li><a href="/results.html">Find Flights</a></li>
+          <li><a href="/results.html">Cheap Deals</a></li>
+          <li><a href="/#transparency">How We Earn</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-title">Account</div>
+        <ul class="footer-links">
+          <li><a href="/auth/login.html">Login</a></li>
+          <li><a href="/auth/register.html">Sign Up</a></li>
+          <li><a href="/account/dashboard.html">My Trips</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="/#transparency">About</a></li>
+          <li><a href="/admin/login.html">Staff Portal</a></li>
+          <li><a href="mailto:support@airfinder.com">Support</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Airfinder. Built to compete — not to trick you.
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/search.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  // Set default date (2 weeks from now)
+  const d = new Date(); d.setDate(d.getDate() + 14);
+  document.getElementById('departure_date').value = d.toISOString().split('T')[0];
+  document.getElementById('departure_date').min = new Date().toISOString().split('T')[0];
+
+  // Load airports datalist
+  try {
+    const airports = await Search.loadAirports();
+    const dl = document.getElementById('airports-list');
+    airports.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = `${a.city} (${a.code})`;
+      dl.appendChild(opt);
+    });
+  } catch {}
+
+  // Load featured routes
+  try {
+    const routes = await Search.loadFeatured();
+    document.getElementById('featuredGrid').innerHTML = routes.map(r => Search.renderFeaturedRoute(r)).join('');
+  } catch {
+    document.getElementById('featuredGrid').innerHTML = '<p class="text-gray">Could not load featured routes.</p>';
+  }
+
+  // Tabs
+  document.querySelectorAll('.search-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('return-date-row').classList.toggle('hidden', tab.dataset.tab !== 'roundtrip');
+    });
+  });
+
+  // Manual search
+  document.getElementById('searchBtn').addEventListener('click', doSearch);
+
+  // AI search
+  document.getElementById('aiSearchBtn').addEventListener('click', doAiSearch);
+  document.getElementById('aiInput').addEventListener('keydown', e => { if (e.key === 'Enter') doAiSearch(); });
+});
+
+function extractIATA(str) {
+  const m = str.match(/\(([A-Z]{3})\)/);
+  return m ? m[1] : str.toUpperCase().slice(0, 3);
+}
+
+function doSearch() {
+  const origin = extractIATA(document.getElementById('origin').value.trim());
+  const destination = extractIATA(document.getElementById('destination').value.trim());
+  const departure_date = document.getElementById('departure_date').value;
+  const pc = document.getElementById('passengers_cabin').value.split('|');
+  const return_date = document.getElementById('return_date').value;
+
+  if (!origin || !destination || !departure_date) {
+    alert('Please fill in From, To, and Date.');
+    return;
+  }
+
+  const params = new URLSearchParams({ origin, destination, departure_date, passengers: pc[0], cabin: pc[1] });
+  if (return_date) params.set('return_date', return_date);
+  window.location.href = `/results.html?${params}`;
+}
+
+async function doAiSearch() {
+  const query = document.getElementById('aiInput').value.trim();
+  if (!query) return;
+  const btn = document.getElementById('aiSearchBtn');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    const data = await Search.aiSearch(query);
+    if (data.parsed && data.parsed.origin && data.parsed.destination) {
+      const p = data.parsed;
+      const params = new URLSearchParams({
+        origin: p.origin, destination: p.destination,
+        departure_date: p.departure_date, passengers: p.passengers, cabin: p.cabin,
+        ai_query: query,
+      });
+      window.location.href = `/results.html?${params}`;
+    } else {
+      alert("Couldn't parse that query. Try: 'flight from Lagos to London next month'");
+    }
+  } catch (e) {
+    alert('Search failed. Please try again.');
+  } finally {
+    btn.textContent = 'Search'; btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="/" class="auth-logo-text">✈ Airfinder</a>
+      <div class="auth-logo-sub">Fly Smart, Pay Fair</div>
+    </div>
+    <h2 class="auth-title">Welcome back</h2>
+    <p class="auth-sub">Sign in to access your bookings</p>
+
+    <div id="alert"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" id="email" type="email" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-toggle">
+          <input class="form-control" id="password" type="password" placeholder="Your password" required autocomplete="current-password">
+          <button type="button" class="toggle-btn" id="toggle-pw">👁</button>
+        </div>
+      </div>
+      <div style="text-align:right;margin-bottom:16px;">
+        <a href="/auth/forgot-password.html" class="text-sm">Forgot password?</a>
+      </div>
+      <button class="btn btn-primary btn-full" type="submit" id="submit-btn">Sign In</button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account? <a href="/auth/register.html">Sign up free</a>
+    </div>
+    <div class="auth-footer" style="margin-top:8px;">
+      <a href="/admin/login.html" class="text-sm text-gray">Staff portal →</a>
+    </div>
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  Auth.redirectIfLoggedIn();
+
+  document.getElementById('toggle-pw').addEventListener('click', () => {
+    const pw = document.getElementById('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  });
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    clearAlert();
+    try {
+      const data = await api.post('/auth/login', {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+      });
+      Auth.save(data.token, { ...data.user, role: 'customer' });
+      const redirect = sessionStorage.getItem('af_redirect_after_login') || '/account/dashboard.html';
+      sessionStorage.removeItem('af_redirect_after_login');
+      window.location.href = redirect;
+    } catch (e) {
+      showAlert(e.message || 'Login failed');
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  });
+});
+function showAlert(msg) { document.getElementById('alert').innerHTML = `<div class="alert alert-error">${msg}</div>`; }
+function clearAlert() { document.getElementById('alert').innerHTML = ''; }
+</script>
+</body>
+</html>

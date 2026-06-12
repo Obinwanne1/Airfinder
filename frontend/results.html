@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flight Results — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/components.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+    <div class="navbar-links">
+      <a href="/" class="navbar-link">← Back</a>
+      <a href="/auth/login.html" class="navbar-link" data-auth-login>Login</a>
+      <a href="/account/dashboard.html" class="navbar-link hidden" data-auth-logout>My Trips</a>
+      <a href="#" class="navbar-link hidden" data-auth-logout>Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Mini search bar -->
+<div style="background:var(--green);padding:12px 0;">
+  <div class="container">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <input class="form-control" id="sr-origin" placeholder="From" style="max-width:120px;">
+      <span style="color:white;font-weight:700;">→</span>
+      <input class="form-control" id="sr-destination" placeholder="To" style="max-width:120px;">
+      <input class="form-control" id="sr-date" type="date" style="max-width:160px;">
+      <select class="form-control" id="sr-passengers" style="max-width:180px;">
+        <option value="1|economy">1 Pax — Economy</option>
+        <option value="1|business">1 Pax — Business</option>
+        <option value="2|economy">2 Pax — Economy</option>
+        <option value="3|economy">3 Pax — Economy</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" id="sr-search-btn">🔍 Update</button>
+    </div>
+    <div id="ai-query-info" class="hidden" style="color:rgba(255,255,255,.8);font-size:13px;margin-top:8px;"></div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:28px;padding-bottom:48px;">
+  <div class="results-layout">
+    <!-- Filter Sidebar -->
+    <aside class="filter-sidebar">
+      <div class="filter-title">🎛 Filters</div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Stops</div>
+        <label class="filter-option"><input type="checkbox" class="filter-stops" value="0" checked> Nonstop</label>
+        <label class="filter-option"><input type="checkbox" class="filter-stops" value="1" checked> 1 Stop</label>
+        <label class="filter-option"><input type="checkbox" class="filter-stops" value="2" checked> 2+ Stops</label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Max Price (USD)</div>
+        <input type="range" class="filter-range" id="price-filter" min="50" max="3000" value="3000">
+        <div class="filter-range-labels"><span>$50</span><span id="price-label">$3000</span></div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">Route Type</div>
+        <label class="filter-option"><input type="checkbox" id="filter-africa" checked> 🌍 Africa Routes</label>
+        <label class="filter-option"><input type="checkbox" id="filter-global" checked> 🌐 Global Routes</label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group-title">OTA Trust</div>
+        <label class="filter-option"><input type="checkbox" class="filter-ota" value="verified" checked> ✓ Verified only</label>
+      </div>
+
+      <button class="btn btn-secondary w-full" id="clear-filters">Clear Filters</button>
+    </aside>
+
+    <!-- Results Panel -->
+    <main>
+      <div class="results-header">
+        <div class="results-count" id="results-count">Searching...</div>
+        <div class="results-sort">
+          Sort:
+          <select id="sort-select">
+            <option value="price">Lowest Price</option>
+            <option value="duration">Shortest Duration</option>
+            <option value="stops">Fewest Stops</option>
+            <option value="trust">Highest Trust</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="results-container">
+        <div style="text-align:center;padding:60px 20px;">
+          <div class="spinner"></div>
+          <p class="text-gray mt-2">Finding the best flights...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/search.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const origin = params.get('origin') || '';
+const destination = params.get('destination') || '';
+const departure_date = params.get('departure_date') || '';
+const passengers = params.get('passengers') || '1';
+const cabin = params.get('cabin') || 'economy';
+const return_date = params.get('return_date') || '';
+const ai_query = params.get('ai_query') || '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Populate mini search
+  document.getElementById('sr-origin').value = origin;
+  document.getElementById('sr-destination').value = destination;
+  document.getElementById('sr-date').value = departure_date;
+
+  if (ai_query) {
+    const info = document.getElementById('ai-query-info');
+    info.classList.remove('hidden');
+    info.textContent = `🤖 AI interpreted: "${ai_query}" → ${origin} → ${destination}`;
+  }
+
+  // Fetch results
+  try {
+    const data = await Search.searchFlights({ origin, destination, departure_date, passengers, cabin, return_date });
+    Search.results = data.results || [];
+    applyFilters();
+  } catch (e) {
+    document.getElementById('results-container').innerHTML = `
+      <div class="no-results">
+        <div class="no-results-icon">😔</div>
+        <h3>No flights found</h3>
+        <p class="text-gray mt-1">Try different dates or a different route.</p>
+        <a href="/" class="btn btn-primary mt-3">New Search</a>
+      </div>`;
+    document.getElementById('results-count').textContent = 'No results';
+  }
+
+  // Sort
+  document.getElementById('sort-select').addEventListener('change', applyFilters);
+
+  // Filters
+  document.querySelectorAll('.filter-stops, .filter-ota').forEach(el => el.addEventListener('change', applyFilters));
+  document.getElementById('filter-africa').addEventListener('change', applyFilters);
+  document.getElementById('filter-global').addEventListener('change', applyFilters);
+  document.getElementById('price-filter').addEventListener('input', function() {
+    document.getElementById('price-label').textContent = `$${this.value}`;
+    applyFilters();
+  });
+  document.getElementById('clear-filters').addEventListener('click', clearFilters);
+
+  // Mini search update
+  document.getElementById('sr-search-btn').addEventListener('click', () => {
+    const o = document.getElementById('sr-origin').value.trim().toUpperCase().slice(0,3);
+    const d = document.getElementById('sr-destination').value.trim().toUpperCase().slice(0,3);
+    const dt = document.getElementById('sr-date').value;
+    const [pax, cb] = document.getElementById('sr-passengers').value.split('|');
+    window.location.href = `/results.html?origin=${o}&destination=${d}&departure_date=${dt}&passengers=${pax}&cabin=${cb}`;
+  });
+});
+
+function applyFilters() {
+  let results = [...Search.results];
+
+  // Stops filter
+  const allowedStops = Array.from(document.querySelectorAll('.filter-stops:checked')).map(el => parseInt(el.value));
+  results = results.filter(f => allowedStops.includes(Math.min(f.stops, 2)));
+
+  // Price filter
+  const maxPrice = parseFloat(document.getElementById('price-filter').value);
+  results = results.filter(f => f.pricing.total <= maxPrice);
+
+  // Route type
+  const showAfrica = document.getElementById('filter-africa').checked;
+  const showGlobal = document.getElementById('filter-global').checked;
+  results = results.filter(f => (f.is_africa_route && showAfrica) || (!f.is_africa_route && showGlobal));
+
+  // Sort
+  const sort = document.getElementById('sort-select').value;
+  if (sort === 'price') results.sort((a, b) => a.pricing.total - b.pricing.total);
+  if (sort === 'duration') results.sort((a, b) => a.duration_hours - b.duration_hours);
+  if (sort === 'stops') results.sort((a, b) => a.stops - b.stops);
+  if (sort === 'trust') results.sort((a, b) => b.airline_trust_score - a.airline_trust_score);
+
+  Search.filteredResults = results;
+  renderResults(results);
+}
+
+function renderResults(results) {
+  const count = results.length;
+  document.getElementById('results-count').textContent =
+    count > 0 ? `${count} flight${count !== 1 ? 's' : ''} found — ${origin} → ${destination}` : 'No flights match your filters';
+
+  if (count === 0) {
+    document.getElementById('results-container').innerHTML = `
+      <div class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <h3>No flights match your filters</h3>
+        <p class="text-gray mt-1">Try relaxing your filters.</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('results-container').innerHTML = results.map(f => Search.renderFlightCard(f)).join('');
+}
+
+function clearFilters() {
+  document.querySelectorAll('.filter-stops').forEach(el => el.checked = true);
+  document.getElementById('price-filter').value = 3000;
+  document.getElementById('price-label').textContent = '$3000';
+  document.getElementById('filter-africa').checked = true;
+  document.getElementById('filter-global').checked = true;
+  applyFilters();
+}
+</script>
+</body>
+</html>

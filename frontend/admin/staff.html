@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Management — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon">📊</span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon">🎫</span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon">👥</span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link active"><span class="admin-nav-icon">🏢</span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link"><span class="admin-nav-icon">💰</span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout>🚪 Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar">
+    <div class="admin-page-title">Staff Management</div>
+    <button class="btn btn-primary btn-sm" onclick="openCreateModal()">+ Add Staff Member</button>
+  </div>
+  <div class="admin-content">
+    <div id="alert-container"></div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="toolbar-search"><span class="toolbar-search-icon">🔍</span><input type="text" id="search-input" placeholder="Search staff..."></div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+          <tbody id="staff-tbody"><tr><td colspan="6"><div class="spinner" style="margin:16px auto;"></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Staff Modal -->
+<div class="modal-overlay hidden" id="create-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 class="mb-3">Add Staff Member</h3>
+    <div id="modal-alert"></div>
+    <form id="create-staff-form">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="cf_first" required placeholder="John"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="cf_last" required placeholder="Doe"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="cf_email" type="email" required placeholder="john@airfinder.com"></div>
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <div class="role-select">
+          <label class="role-option"><input type="radio" name="cf_role" value="agent" required checked><div class="role-option-label">Agent</div><div class="role-option-desc">Bookings & customer support</div></label>
+          <label class="role-option"><input type="radio" name="cf_role" value="finance"><div class="role-option-label">Finance</div><div class="role-option-desc">Revenue & reports</div></label>
+          <label class="role-option"><input type="radio" name="cf_role" value="admin"><div class="role-option-label">Admin</div><div class="role-option-desc">Full operations access</div></label>
+        </div>
+      </div>
+      <div class="alert alert-info text-sm">A temporary password will be generated and emailed to the staff member. They must change it on first login.</div>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="flex:1;" id="create-btn">Create Account</button>
+      </div>
+    </form>
+    <div id="create-success" class="hidden">
+      <div class="alert alert-success">✓ Staff account created! Credentials sent to email.</div>
+      <div class="card card-body mt-2" id="cred-box"></div>
+      <button class="btn btn-primary w-full mt-2" onclick="closeModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+let staffList = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireRole('super_admin', 'admin')) return;
+  loadStaff();
+  document.getElementById('search-input').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    renderStaff(staffList.filter(s => s.email.includes(q) || s.first_name.toLowerCase().includes(q) || s.last_name.toLowerCase().includes(q)));
+  });
+});
+
+async function loadStaff() {
+  try {
+    staffList = await Admin.loadStaff();
+    renderStaff(staffList);
+  } catch { document.getElementById('staff-tbody').innerHTML = '<tr><td colspan="6" class="text-gray">Failed to load staff.</td></tr>'; }
+}
+
+function renderStaff(list) {
+  if (!list.length) { document.getElementById('staff-tbody').innerHTML = '<tr><td colspan="6" class="text-gray" style="text-align:center;padding:20px;">No staff found.</td></tr>'; return; }
+  document.getElementById('staff-tbody').innerHTML = list.map(s => `
+    <tr>
+      <td><strong>${s.first_name} ${s.last_name}</strong></td>
+      <td>${s.email}</td>
+      <td>${Admin.roleBadge(s.role)}</td>
+      <td>${s.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}</td>
+      <td class="text-sm text-gray">${s.last_login ? new Date(s.last_login).toLocaleDateString() : 'Never'}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-secondary btn-sm" onclick="resetPassword('${s.id}','${s.first_name}')">Reset PW</button>
+        <button class="btn btn-sm ${s.is_active ? 'btn-danger' : 'btn-primary'}" onclick="toggleActive('${s.id}',${!s.is_active})">${s.is_active ? 'Deactivate' : 'Activate'}</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openCreateModal() { document.getElementById('create-modal').classList.remove('hidden'); document.getElementById('create-success').classList.add('hidden'); document.getElementById('create-staff-form').classList.remove('hidden'); }
+function closeModal() { document.getElementById('create-modal').classList.add('hidden'); loadStaff(); }
+
+document.getElementById('create-staff-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const data = await Admin.createStaff({
+      first_name: document.getElementById('cf_first').value,
+      last_name: document.getElementById('cf_last').value,
+      email: document.getElementById('cf_email').value,
+      role: document.querySelector('input[name=cf_role]:checked').value,
+    });
+    document.getElementById('create-staff-form').classList.add('hidden');
+    document.getElementById('cred-box').innerHTML = `<p class="text-sm"><strong>Email:</strong> ${data.staff.email}</p><p class="text-sm mt-1"><strong>Temp Password:</strong> <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px;">${data.temp_password}</code></p><p class="text-xs text-gray mt-1">Share this securely. Staff will be forced to change on first login.</p>`;
+    document.getElementById('create-success').classList.remove('hidden');
+  } catch (e) {
+    document.getElementById('modal-alert').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+  } finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+});
+
+async function resetPassword(id, name) {
+  if (!confirm(`Reset password for ${name}?`)) return;
+  try {
+    const data = await Admin.resetStaffPassword(id);
+    Admin.showToast(`Password reset. Temp: ${data.temp_password}`);
+  } catch (e) { Admin.showToast(e.message, 'error'); }
+}
+
+async function toggleActive(id, isActive) {
+  try {
+    await Admin.updateStaff(id, { is_active: isActive });
+    Admin.showToast(isActive ? 'Staff activated' : 'Staff deactivated');
+    loadStaff();
+  } catch (e) { Admin.showToast(e.message, 'error'); }
+}
+</script>
+</body>
+</html>
