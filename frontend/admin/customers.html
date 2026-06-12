@@ -75,9 +75,9 @@ function renderCustomers(customers) {
   if (!customers.length) { document.getElementById('customers-tbody').innerHTML = '<tr><td colspan="7" class="text-gray" style="text-align:center;padding:20px;">No customers found.</td></tr>'; return; }
   document.getElementById('customers-tbody').innerHTML = customers.map(c => `
     <tr>
-      <td><strong>${c.first_name} ${c.last_name}</strong></td>
-      <td>${c.email}</td>
-      <td>${c.phone || '—'}</td>
+      <td><strong>${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)}</strong></td>
+      <td>${escapeHtml(c.email)}</td>
+      <td>${escapeHtml(c.phone) || '—'}</td>
       <td>${c.booking_count}</td>
       <td>${Admin.formatCurrency(c.total_spent)}</td>
       <td class="text-sm text-gray">${new Date(c.created_at).toLocaleDateString()}</td>

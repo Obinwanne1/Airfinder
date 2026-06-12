@@ -103,6 +103,28 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireStaff()) return;
   Admin.initSidebar();
 
+  // Inject hamburger button into topbar for mobile
+  const topbar = document.querySelector('.admin-topbar');
+  if (topbar) {
+    const hamburger = document.createElement('button');
+    hamburger.className = 'admin-hamburger';
+    hamburger.setAttribute('aria-label', 'Toggle menu');
+    hamburger.innerHTML = '<span></span><span></span><span></span>';
+    topbar.prepend(hamburger);
+
+    const sidebar = document.querySelector('.admin-sidebar');
+    const overlay = document.createElement('div');
+    overlay.className = 'admin-overlay';
+    document.body.appendChild(overlay);
+
+    function toggleSidebar() {
+      const open = sidebar.classList.toggle('open');
+      overlay.classList.toggle('visible', open);
+    }
+    hamburger.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+  }
+
   // Logout button
   document.querySelectorAll('[data-admin-logout]').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -41,6 +41,8 @@ class Booking(db.Model):
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.PENDING)
     notes = db.Column(db.Text)
     agent_id = db.Column(db.String(36), db.ForeignKey('staff.id'), nullable=True)
+    group_reference = db.Column(db.String(20), nullable=True, index=True)
+    is_multicity = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -70,6 +72,8 @@ class Booking(db.Model):
             },
             'status': self.status.value,
             'notes': self.notes,
+            'group_reference': self.group_reference,
+            'is_multicity': self.is_multicity or False,
             'created_at': self.created_at.isoformat()
         }
 

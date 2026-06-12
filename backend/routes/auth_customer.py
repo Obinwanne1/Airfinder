@@ -8,10 +8,12 @@ from backend.models.database import db
 from backend.models.user import User
 from backend.middleware.jwt_guard import jwt_required
 from backend.services.email_service import send_welcome_email, send_password_reset_email
+from backend.extensions import limiter
 
 bp = Blueprint('auth_customer', __name__, url_prefix='/api/auth')
 
 @bp.route('/register', methods=['POST'])
+@limiter.limit("10 per hour")
 def register():
     data = request.get_json()
     required = ['email', 'password', 'first_name', 'last_name']
@@ -49,6 +51,7 @@ def register():
     }), 201
 
 @bp.route('/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     data = request.get_json()
     if not data.get('email') or not data.get('password'):
@@ -65,6 +68,7 @@ def login():
     return jsonify({'token': token, 'user': user.to_dict()})
 
 @bp.route('/forgot-password', methods=['POST'])
+@limiter.limit("5 per hour")
 def forgot_password():
     data = request.get_json()
     email = data.get('email', '').lower()

@@ -71,6 +71,36 @@ def ai_search():
         'count': len(results),
     })
 
+@bp.route('/search/multicity', methods=['POST'])
+def multicity_search():
+    data = request.get_json()
+    legs = data.get('legs', [])
+    passengers = max(1, min(int(data.get('passengers', 1)), 9))
+    cabin = data.get('cabin', 'economy')
+
+    if len(legs) < 2:
+        return jsonify({'error': 'At least 2 legs required'}), 400
+    if len(legs) > 6:
+        return jsonify({'error': 'Maximum 6 legs allowed'}), 400
+
+    results = []
+    for i, leg in enumerate(legs):
+        origin = leg.get('origin', '').upper()
+        destination = leg.get('destination', '').upper()
+        date = leg.get('date', '')
+        if not origin or not destination or not date:
+            return jsonify({'error': f'Leg {i+1}: origin, destination, and date required'}), 400
+        flights = search_flights(origin, destination, date, passengers, cabin)
+        results.append({
+            'leg_num': i + 1,
+            'origin': origin,
+            'destination': destination,
+            'date': date,
+            'flights': flights,
+        })
+
+    return jsonify({'legs': results, 'passengers': passengers, 'cabin': cabin})
+
 @bp.route('/featured', methods=['GET'])
 def featured():
     return jsonify(get_featured_routes())

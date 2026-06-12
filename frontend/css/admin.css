@@ -122,6 +122,28 @@ tr:hover td { background: var(--gray-50); }
 .revenue-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
 .revenue-value { font-size: 1.4rem; font-weight: 900; color: var(--green); margin-top: 4px; }
 
+/* Mobile hamburger */
+.admin-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px; height: 20px;
+  background: none; border: none; cursor: pointer; padding: 0; margin-right: 14px;
+}
+.admin-hamburger span {
+  display: block; height: 2px; background: var(--gray-800); border-radius: 2px; transition: all .2s;
+}
+@media (max-width: 900px) {
+  .admin-hamburger { display: flex; }
+}
+
+/* Overlay when sidebar open on mobile */
+.admin-overlay {
+  display: none;
+  position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 199;
+}
+.admin-overlay.visible { display: block; }
+
 /* Force change password */
 .force-change-wrapper {
   min-height: 100vh;

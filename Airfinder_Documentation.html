@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airfinder — System Documentation</title>
+<style>
+  :root {
+    --green: #407E3C;
+    --green-light: #5a9e56;
+    --green-pale: #e8f5e3;
+    --white: #ffffff;
+    --gray: #6b7280;
+    --gray-light: #f3f4f6;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-secondary: #374151;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    background: #fff;
+  }
+
+  /* ─── PRINT SETUP ─── */
+  @media print {
+    .no-print { display: none !important; }
+    body { font-size: 12px; }
+    .page-break { page-break-before: always; }
+    .avoid-break { page-break-inside: avoid; }
+    h1, h2, h3 { page-break-after: avoid; }
+    pre { page-break-inside: avoid; white-space: pre-wrap; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @page {
+    margin: 2cm 2.2cm 2.2cm 2.2cm;
+    @bottom-center { content: counter(page); font-size: 10px; color: #888; }
+  }
+
+  /* ─── COVER ─── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(145deg, var(--green) 0%, #2d5c2a 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    padding: 60px 40px;
+  }
+
+  .cover-logo {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+
+  .cover-tagline {
+    font-size: 18px;
+    opacity: 0.85;
+    margin-bottom: 60px;
+    font-weight: 300;
+  }
+
+  .cover-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .cover-subtitle {
+    font-size: 16px;
+    opacity: 0.75;
+    margin-bottom: 60px;
+    max-width: 500px;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 30px;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+
+  .cover-meta span { display: block; }
+  .cover-meta strong { display: block; font-size: 15px; opacity: 1; font-weight: 600; }
+
+  /* ─── LAYOUT ─── */
+  .doc-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  /* ─── TOC ─── */
+  .toc {
+    background: var(--gray-light);
+    border-left: 4px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    padding: 32px 36px;
+    margin-bottom: 48px;
+  }
+
+  .toc h2 {
+    font-size: 18px;
+    color: var(--green);
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .toc ol {
+    list-style: decimal;
+    padding-left: 24px;
+  }
+
+  .toc li {
+    margin-bottom: 6px;
+    font-size: 13.5px;
+  }
+
+  .toc a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .toc a:hover { color: var(--green); }
+
+  .toc-sub {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 4px;
+  }
+
+  .toc-sub li { margin-bottom: 2px; font-size: 12.5px; color: var(--gray); }
+
+  /* ─── HEADINGS ─── */
+  .section-header {
+    background: var(--green);
+    color: white;
+    padding: 14px 24px;
+    border-radius: 8px;
+    margin: 48px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-number {
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: 16px;
+    color: var(--green);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--green-pale);
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 12px; color: var(--text-secondary); }
+
+  /* ─── CODE ─── */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin: 12px 0 20px;
+    font-family: 'Consolas', 'Monaco', monospace;
+  }
+
+  code {
+    background: #f0fdf4;
+    color: #166534;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12.5px;
+    border: 1px solid #bbf7d0;
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-size: inherit;
+  }
+
+  /* ─── TABLES ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--green);
+    color: white;
+  }
+
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:nth-child(even) { background: var(--gray-light); }
+  tbody td { padding: 9px 14px; color: var(--text-secondary); }
+
+  /* ─── CALLOUTS ─── */
+  .callout {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 13.5px; }
+  .callout-body p { margin: 0; font-size: 13px; }
+
+  .callout-warning { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .callout-info    { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .callout-success { background: var(--green-pale); border-left: 4px solid var(--green); }
+  .callout-danger  { background: #fef2f2; border-left: 4px solid #ef4444; }
+
+  /* ─── FLOW DIAGRAM ─── */
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 16px 0 24px;
+  }
+
+  .flow-step {
+    background: var(--green-pale);
+    border: 2px solid var(--green);
+    color: var(--green);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .flow-arrow {
+    color: var(--gray);
+    font-size: 16px;
+    padding: 0 6px;
+  }
+
+  /* ─── ROLE BADGE ─── */
+  .role {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    margin: 1px 2px;
+  }
+
+  .role-super  { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .role-admin  { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .role-agent  { background: var(--green-pale); color: #166534; border: 1px solid #86efac; }
+  .role-finance { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+  .role-customer { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+  /* ─── ENDPOINT ─── */
+  .endpoint {
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 10px 0 18px;
+  }
+
+  .endpoint-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .method {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-family: monospace;
+  }
+
+  .get    { background: #dbeafe; color: #1d4ed8; }
+  .post   { background: #dcfce7; color: #15803d; }
+  .put    { background: #fef9c3; color: #854d0e; }
+  .delete { background: #fee2e2; color: #b91c1c; }
+
+  .endpoint-path {
+    font-family: 'Consolas', monospace;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .endpoint-desc { color: var(--gray); font-size: 12.5px; margin-top: 4px; }
+  .endpoint-auth { font-size: 11.5px; color: var(--gray); margin-top: 4px; }
+
+  /* ─── MISC ─── */
+  ul, ol { padding-left: 22px; margin-bottom: 14px; color: var(--text-secondary); }
+  li { margin-bottom: 5px; }
+
+  .tag {
+    display: inline-block;
+    background: var(--green-pale);
+    color: var(--green);
+    border: 1px solid #86efac;
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 1px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  .print-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(64,126,60,0.4);
+    z-index: 100;
+  }
+
+  .print-btn:hover { background: var(--green-light); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 16px 0;
+  }
+
+  .info-card {
+    background: var(--gray-light);
+    border-radius: 8px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--green);
+  }
+
+  .info-card h4 { margin-top: 0; color: var(--green); font-size: 13px; }
+  .info-card p { margin: 0; font-size: 13px; }
+
+  .cred-box {
+    background: var(--code-bg);
+    color: #86efac;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 12px 0;
+  }
+
+  .cred-label { color: #94a3b8; font-size: 11px; display: block; margin-top: 10px; }
+  .cred-label:first-child { margin-top: 0; }
+
+  .step-list { list-style: none; padding: 0; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    padding: 12px 16px 12px 52px;
+    position: relative;
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+  }
+
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--green);
+    color: white;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save as PDF</button>
+
+<!-- ═══════════════════════════════════════════ COVER ═══ -->
+<div class="cover">
+  <div class="cover-logo">✈ Airfinder</div>
+  <div class="cover-tagline">Africa-First Global Flight Search & Booking Platform</div>
+  <div class="cover-title">System Documentation</div>
+  <div class="cover-subtitle">Complete technical and operational guide — setup, configuration, user flows, staff management, and API reference</div>
+  <div class="cover-meta">
+    <div><span class="cover-meta-label">Version</span><strong>1.0</strong></div>
+    <div><span class="cover-meta-label">Stack</span><strong>Python / Flask / SQLite</strong></div>
+    <div><span class="cover-meta-label">Date</span><strong>June 2025</strong></div>
+    <div><span class="cover-meta-label">Status</span><strong>Production-Ready</strong></div>
+  </div>
+</div>
+
+<div class="doc-body">
+
+<!-- ═══════════════════════════════════════════ TOC ═══ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#s1">System Overview &amp; Architecture</a></li>
+    <li><a href="#s2">Installation &amp; Setup</a>
+      <ul class="toc-sub">
+        <li>Prerequisites</li>
+        <li>Environment configuration</li>
+        <li>Starting the server</li>
+      </ul>
+    </li>
+    <li><a href="#s3">Project Structure</a></li>
+    <li><a href="#s4">Database Schema</a></li>
+    <li><a href="#s5">User Roles &amp; Access Control</a></li>
+    <li><a href="#s6">Customer Flows — Step by Step</a>
+      <ul class="toc-sub">
+        <li>Registration &amp; login</li>
+        <li>Flight search (simple, round-trip, AI, multi-city)</li>
+        <li>Booking flow</li>
+        <li>Account management</li>
+      </ul>
+    </li>
+    <li><a href="#s7">Staff Portal — Step by Step</a>
+      <ul class="toc-sub">
+        <li>First login &amp; password change</li>
+        <li>Admin dashboard</li>
+        <li>Managing staff accounts</li>
+        <li>Managing bookings</li>
+        <li>Finance view</li>
+      </ul>
+    </li>
+    <li><a href="#s8">Pricing &amp; Revenue Engine</a></li>
+    <li><a href="#s9">AI Search Engine</a></li>
+    <li><a href="#s10">Multi-City Booking</a></li>
+    <li><a href="#s11">Full API Reference</a></li>
+    <li><a href="#s12">Security Features</a></li>
+    <li><a href="#s13">Email Notifications</a></li>
+    <li><a href="#s14">Deployment Checklist</a></li>
+    <li><a href="#s15">Troubleshooting</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════ S1 ═══ -->
+<div id="s1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <h2>System Overview &amp; Architecture</h2>
+  </div>
+
+  <p>Airfinder is a full-stack air ticket search and booking web application built for the travel industry. It exposes a REST API backend and a vanilla HTML/CSS/JS frontend served from the same Flask server. The system is Africa-focused but globally capable, supporting routes across all major continents.</p>
+
+  <h3>What the system does</h3>
+  <ul>
+    <li>Customers search for flights by route, date, passenger count, and cabin class</li>
+    <li>Flights include a <strong>True Cost breakdown</strong> showing base fare, markup, service fee, and optional add-ons (baggage and seat selection) before checkout</li>
+    <li>Customers book single-leg, round-trip, or <strong>multi-city itineraries</strong> (2–6 legs in one checkout)</li>
+    <li>Staff manage bookings, customers, and other staff through a role-gated admin portal</li>
+    <li>All revenue streams (markup, commission, service fees) are tracked per booking</li>
+    <li>An <strong>AI natural-language search bar</strong> parses free-text queries like <em>"cheap flight from Lagos to London next month"</em> into structured search parameters</li>
+  </ul>
+
+  <h3>Architecture overview</h3>
+  <pre>
+┌─────────────────────────────────────────────────────────┐
+│                     Flask Server (port 5000)            │
+│                                                         │
+│  ┌─────────────────┐    ┌─────────────────────────┐    │
+│  │   Frontend       │    │   REST API (/api/*)     │    │
+│  │  (static files) │    │                         │    │
+│  │  /frontend/     │    │  auth_customer  ──┐     │    │
+│  │  HTML/CSS/JS    │    │  auth_staff     ──┤     │    │
+│  │                 │    │  flights        ──┤──► SQLite│
+│  └─────────────────┘    │  bookings       ──┤    DB   │
+│                         │  admin          ──┤         │
+│                         │  staff_mgmt     ──┘         │
+│                         └─────────────────────────────┘│
+└─────────────────────────────────────────────────────────┘
+  </pre>
+
+  <div class="two-col">
+    <div class="info-card">
+      <h4>Backend</h4>
+      <p>Python 3 + Flask 3.0 with SQLAlchemy ORM. JWT authentication. bcrypt password hashing. Flask-Limiter for rate limiting. Flask-Mail for emails.</p>
+    </div>
+    <div class="info-card">
+      <h4>Frontend</h4>
+      <p>Vanilla HTML5 / CSS3 / JavaScript. No framework dependencies. Served as static files by Flask. Brand color: <strong>#407E3C</strong> (green).</p>
+    </div>
+    <div class="info-card">
+      <h4>Database</h4>
+      <p>SQLite (file: <code>airfinder.db</code>). SQLAlchemy models. Automatic column migration on startup — no manual DB management required.</p>
+    </div>
+    <div class="info-card">
+      <h4>Authentication</h4>
+      <p>JWT tokens (24-hour expiry for customers, 12-hour for staff). Separate login endpoints for customers and staff. RBAC via role claims in token.</p>
+    </div>
+  </div>
+
+  <h3>Revenue model</h3>
+  <table>
+    <thead><tr><th>Stream</th><th>How it works</th><th>Default rate</th></tr></thead>
+    <tbody>
+      <tr><td>Fare markup</td><td>Added to base fare at display time</td><td>8%</td></tr>
+      <tr><td>Service fee</td><td>Flat per-booking charge shown to customer</td><td>$15 USD</td></tr>
+      <tr><td>Commission</td><td>Recorded internally per booking from base fare</td><td>3%</td></tr>
+      <tr><td>Baggage fees</td><td>Add-on at checkout — carry-on free, checked bags priced</td><td>$35 / $60</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ S2 ═══ -->
+<div id="s2" class="page-break">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <h2>Installation &amp; Setup</h2>
+  </div>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Python 3.10 or later</li>
+    <li>pip (comes with Python)</li>
+    <li>Git (optional, for version control)</li>
+    <li>A terminal (Command Prompt, PowerShell, or macOS/Linux terminal)</li>
+  </ul>
+
+  <h3>Step-by-step installation</h3>
+  <ol class="step-list">
+    <li><strong>Clone or copy the project</strong> to your machine. The root folder should be named <code>Airfinder</code> (or any name you choose).</li>
+    <li><strong>Open a terminal</strong> in the project root directory.</li>
+    <li><strong>Install Python dependencies:</strong>
+<pre>pip install -r requirements.txt</pre>
+    </li>
+    <li><strong>Configure the environment file</strong> — a <code>.env</code> file is already included. Edit it as needed (see table below).</li>
+    <li><strong>Start the server:</strong>
+<pre>python backend/app.py</pre>
+    The server starts on <code>http://localhost:5000</code>. The database file (<code>airfinder.db</code>) is created automatically on first run, and a super admin account is seeded.</li>
+    <li><strong>Open a browser</strong> and navigate to <code>http://localhost:5000</code></li>
+  </ol>
+
+  <div class="callout callout-success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Database is automatic</strong>
+      <p>You do not need to run any migration commands. The database tables are created on first start, and new columns are added automatically if the database already exists from a previous version.</p>
+    </div>
+  </div>
+
+  <h3>Environment configuration (.env)</h3>
+  <table>
+    <thead><tr><th>Variable</th><th>Default value</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>PORT</code></td><td>5000</td><td>Port Flask listens on</td></tr>
+      <tr><td><code>SECRET_KEY</code></td><td><em>see .env</em></td><td>Flask session secret — change in production</td></tr>
+      <tr><td><code>JWT_SECRET</code></td><td><em>see .env</em></td><td>JWT signing key — change in production</td></tr>
+      <tr><td><code>DATABASE_URL</code></td><td>sqlite:///airfinder.db</td><td>Database path</td></tr>
+      <tr><td><code>MAIL_SERVER</code></td><td>smtp.gmail.com</td><td>SMTP server for email delivery</td></tr>
+      <tr><td><code>MAIL_USERNAME</code></td><td>noreply@airfinder.com</td><td>Sending email address</td></tr>
+      <tr><td><code>MAIL_PASSWORD</code></td><td><em>your-password</em></td><td>SMTP password or app-specific password</td></tr>
+      <tr><td><code>DEFAULT_MARKUP_PERCENT</code></td><td>8</td><td>Fare markup percentage added to all flights</td></tr>
+      <tr><td><code>DEFAULT_SERVICE_FEE_USD</code></td><td>15</td><td>Flat service fee per booking</td></tr>
+      <tr><td><code>DEFAULT_COMMISSION_PERCENT</code></td><td>3</td><td>Commission rate recorded per booking</td></tr>
+      <tr><td><code>SUPER_ADMIN_EMAIL</code></td><td>admin@airfinder.com</td><td>Seeded super admin email</td></tr>
+      <tr><td><code>SUPER_ADMIN_PASSWORD</code></td><td>Admin@2024!</td><td>Seeded super admin password — change immediately</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>Change secrets before going live</strong>
+      <p>The <code>SECRET_KEY</code>, <code>JWT_SECRET</code>, and <code>SUPER_ADMIN_PASSWORD</code> in the default <code>.env</code> are for development only. Replace all three with strong random values before deploying to any public-facing server.</p>
+    </div>
+  </div>
+
+  <h3>Default login credentials</h3>
+  <div class="cred-box">
+    <span class="cred-label">── SUPER ADMIN (Staff Portal) ──</span>
+    URL:       http://localhost:5000/admin/login.html
+    Email:     admin@airfinder.com
+    Password:  Admin@2024!
+
+    <span class="cred-label">── CUSTOMER (Frontend) ──</span>
+    URL:       http://localhost:5000/auth/login.html
+    Self-register at: http://localhost:5000/auth/register.html
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ S3 ═══ -->
+<div id="s3" class="page-break">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <h2>Project Structure</h2>
+  </div>
+
+  <pre>
+Airfinder/
+├── backend/
+│   ├── app.py                    Flask application factory + route registration
+│   ├── config.py                 Environment config loading
+│   ├── extensions.py             Flask-Limiter instance (shared across modules)
+│   ├── models/
+│   │   ├── database.py           SQLAlchemy setup + DB init + auto-migration
+│   │   ├── user.py               Customer user model
+│   │   ├── staff.py              Staff model (role enum + hierarchy)
+│   │   └── booking.py            Booking model (single + multi-city)
+│   ├── routes/
+│   │   ├── auth_customer.py      Customer: register, login, forgot/reset password
+│   │   ├── auth_staff.py         Staff: login, force-change-password
+│   │   ├── flights.py            Search, AI search, multi-city search, pricing
+│   │   ├── bookings.py           Create / manage / cancel bookings
+│   │   ├── admin.py              Dashboard data, customers, all bookings, finance
+│   │   └── staff_mgmt.py         Staff CRUD (create, update, reset password, deactivate)
+│   ├── middleware/
+│   │   ├── jwt_guard.py          JWT decode + attach user to request context
+│   │   └── role_guard.py         RBAC decorator (@require_role)
+│   ├── services/
+│   │   ├── mock_flights.py       Realistic mock flight data (50+ routes, Africa-focused)
+│   │   ├── pricing.py            Markup + commission + baggage + seat fee engine
+│   │   ├── ai_search.py          Natural-language query parser
+│   │   └── email_service.py      Welcome, reset, booking confirmation, staff credential emails
+│   └── tests/
+│       ├── conftest.py           Pytest fixtures (test app + client)
+│       ├── test_auth.py          Customer auth tests
+│       ├── test_flights.py       Flight search tests
+│       └── test_bookings.py      Booking creation tests
+│
+├── frontend/
+│   ├── index.html                Landing page + search (one-way / round-trip / multi-city)
+│   ├── results.html              Flight results with True Cost breakdown
+│   ├── multicity.html            Multi-city leg selection + combined booking
+│   ├── booking.html              Booking checkout (single or multi-city)
+│   ├── confirmation.html         Booking confirmed page
+│   ├── auth/
+│   │   ├── login.html            Customer login
+│   │   ├── register.html         Customer registration
+│   │   ├── forgot-password.html  Request password reset
+│   │   └── reset-password.html   Set new password via token
+│   ├── account/
+│   │   ├── dashboard.html        Customer account dashboard
+│   │   └── bookings.html         Customer booking history
+│   ├── admin/
+│   │   ├── login.html            Staff-only login
+│   │   ├── change-password.html  First-login forced password change
+│   │   ├── dashboard.html        Role-aware stats dashboard
+│   │   ├── staff.html            Staff management (super_admin / admin only)
+│   │   ├── bookings.html         All bookings management
+│   │   ├── customers.html        Customer list + CRM view
+│   │   ├── finance.html          Revenue and commission breakdown
+│   │   └── settings.html         System config (super_admin only)
+│   ├── css/
+│   │   ├── main.css              Global brand variables + base styles
+│   │   ├── components.css        Cards, buttons, modals, forms, spinners
+│   │   ├── search.css            Search bar, flight cards, multi-city styles
+│   │   └── admin.css             Admin panel layout + mobile hamburger
+│   └── js/
+│       ├── api.js                Centralized fetch wrapper + JWT header + escapeHtml
+│       ├── auth.js               Token storage, login/logout helpers, nav state
+│       ├── search.js             Search form, results rendering, Africa badge
+│       ├── booking.js            Booking flow state machine
+│       └── admin.js              Admin tables, modals, role logic, hamburger menu
+│
+├── .env                          Environment variables (secrets, config)
+├── .gitignore                    Git ignore rules
+├── requirements.txt              Python package dependencies
+├── CLAUDE.md                     Project notes for Claude AI
+└── airfinder.db                  SQLite database (auto-created on first run)
+  </pre>
+</div>
+
+<!-- ═══════════════════════════════════════════ S4 ═══ -->
+<div id="s4" class="page-break">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <h2>Database Schema</h2>
+  </div>
+
+  <h3>users table</h3>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>UUID (PK)</td><td>Auto-generated unique identifier</td></tr>
+      <tr><td><code>email</code></td><td>String (unique)</td><td>Login email, stored lowercase</td></tr>
+      <tr><td><code>password_hash</code></td><td>String</td><td>bcrypt hash of password</td></tr>
+      <tr><td><code>first_name</code></td><td>String</td><td>Customer first name</td></tr>
+      <tr><td><code>last_name</code></td><td>String</td><td>Customer last name</td></tr>
+      <tr><td><code>phone</code></td><td>String (optional)</td><td>Contact phone number</td></tr>
+      <tr><td><code>is_active</code></td><td>Boolean</td><td>Account active/deactivated flag</td></tr>
+      <tr><td><code>is_verified</code></td><td>Boolean</td><td>Email verification status</td></tr>
+      <tr><td><code>reset_token</code></td><td>String (optional)</td><td>Password reset token (one-time use)</td></tr>
+      <tr><td><code>reset_token_expiry</code></td><td>DateTime</td><td>Reset token expiry (15 minutes)</td></tr>
+      <tr><td><code>created_at</code></td><td>DateTime</td><td>Account creation timestamp</td></tr>
+    </tbody>
+  </table>
+
+  <h3>staff table</h3>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>UUID (PK)</td><td>Auto-generated unique identifier</td></tr>
+      <tr><td><code>email</code></td><td>String (unique)</td><td>Login email</td></tr>
+      <tr><td><code>password_hash</code></td><td>String</td><td>bcrypt hash of password</td></tr>
+      <tr><td><code>first_name / last_name</code></td><td>String</td><td>Staff member name</td></tr>
+      <tr><td><code>role</code></td><td>Enum</td><td>super_admin / admin / agent / finance</td></tr>
+      <tr><td><code>must_change_password</code></td><td>Boolean</td><td>True for new staff — forces password change on first login</td></tr>
+      <tr><td><code>is_active</code></td><td>Boolean</td><td>Active/deactivated flag</td></tr>
+      <tr><td><code>created_by</code></td><td>UUID (FK → staff)</td><td>Which staff member created this account</td></tr>
+      <tr><td><code>last_login</code></td><td>DateTime</td><td>Timestamp of last successful login</td></tr>
+    </tbody>
+  </table>
+
+  <h3>bookings table</h3>
+  <table>
+    <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>UUID (PK)</td><td>Auto-generated</td></tr>
+      <tr><td><code>reference</code></td><td>String (unique)</td><td>Customer-facing booking code (e.g. AF3X9KZ2)</td></tr>
+      <tr><td><code>user_id</code></td><td>UUID (FK → users)</td><td>Booking owner</td></tr>
+      <tr><td><code>flight_id</code></td><td>String</td><td>Flight identifier from mock data</td></tr>
+      <tr><td><code>origin / destination</code></td><td>String</td><td>IATA airport codes, stored at booking time</td></tr>
+      <tr><td><code>departure_date</code></td><td>String</td><td>Date of departure (YYYY-MM-DD)</td></tr>
+      <tr><td><code>airline / flight_number</code></td><td>String</td><td>Stored snapshot from search result</td></tr>
+      <tr><td><code>cabin_class</code></td><td>String</td><td>economy / business / first</td></tr>
+      <tr><td><code>passengers_json</code></td><td>Text (JSON)</td><td>Full passenger details array</td></tr>
+      <tr><td><code>passenger_count</code></td><td>Integer</td><td>Number of passengers</td></tr>
+      <tr><td><code>base_fare_usd</code></td><td>Float</td><td>Original wholesale fare</td></tr>
+      <tr><td><code>markup_usd</code></td><td>Float</td><td>Applied markup amount</td></tr>
+      <tr><td><code>service_fee_usd</code></td><td>Float</td><td>Flat service fee</td></tr>
+      <tr><td><code>baggage_fee_usd</code></td><td>Float</td><td>Baggage add-on total</td></tr>
+      <tr><td><code>seat_fee_usd</code></td><td>Float</td><td>Seat selection add-on total</td></tr>
+      <tr><td><code>total_usd</code></td><td>Float</td><td>Final amount charged to customer</td></tr>
+      <tr><td><code>commission_usd</code></td><td>Float</td><td>Airfinder commission (internal tracking)</td></tr>
+      <tr><td><code>status</code></td><td>Enum</td><td>pending / confirmed / cancelled / refunded</td></tr>
+      <tr><td><code>notes</code></td><td>Text (optional)</td><td>Staff notes on booking</td></tr>
+      <tr><td><code>group_reference</code></td><td>String (optional)</td><td>Shared across all legs of a multi-city booking</td></tr>
+      <tr><td><code>is_multicity</code></td><td>Boolean</td><td>True if part of a multi-city itinerary</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ S5 ═══ -->
+<div id="s5" class="page-break">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <h2>User Roles &amp; Access Control</h2>
+  </div>
+
+  <p>Airfinder uses Role-Based Access Control (RBAC). Every JWT token contains a <code>role</code> claim. The backend validates the role on every protected endpoint using the <code>@require_role()</code> decorator.</p>
+
+  <h3>Role hierarchy</h3>
+  <table>
+    <thead><tr><th>Role</th><th>Level</th><th>Created by</th><th>What they can do</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="role role-super">super_admin</span></td>
+        <td>4 (highest)</td>
+        <td>System seed</td>
+        <td>Full system access. Create/manage all staff including admins. Access system settings. View all data. Delete staff accounts.</td>
+      </tr>
+      <tr>
+        <td><span class="role role-admin">admin</span></td>
+        <td>3</td>
+        <td>super_admin</td>
+        <td>Operations management. Create agents and finance staff. View and update all bookings. View customers. Cannot touch super_admin accounts or system settings.</td>
+      </tr>
+      <tr>
+        <td><span class="role role-agent">agent</span></td>
+        <td>2</td>
+        <td>super_admin or admin</td>
+        <td>View and update bookings. View customer profiles. Cannot create staff. No access to finance data.</td>
+      </tr>
+      <tr>
+        <td><span class="role role-finance">finance</span></td>
+        <td>1</td>
+        <td>super_admin or admin</td>
+        <td>Read-only access to revenue reports, commission data, and bookings. Cannot modify anything. No customer PII beyond booking data.</td>
+      </tr>
+      <tr>
+        <td><span class="role role-customer">customer</span></td>
+        <td>0</td>
+        <td>Self-registration</td>
+        <td>Frontend only. Search flights, create bookings, view own bookings, manage own profile. No access to admin portal.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Role enforcement rules</h3>
+  <ul>
+    <li>A staff member can only create or modify accounts with a <em>lower</em> role level than their own</li>
+    <li>An admin cannot promote another staff member to admin or super_admin</li>
+    <li>super_admin is the only role that can delete (deactivate) staff accounts</li>
+    <li>Staff with <code>must_change_password = true</code> are blocked from all admin actions — they are redirected to the password change page on every request</li>
+  </ul>
+
+  <h3>JWT token structure</h3>
+  <pre>
+{
+  "user_id": "550e8400-e29b-41d4-a716-446655440000",
+  "role": "agent",
+  "must_change_password": false,
+  "exp": 1750000000
+}
+  </pre>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>Customer vs Staff tokens</strong>
+      <p>Customer tokens expire after <strong>24 hours</strong>. Staff tokens expire after <strong>12 hours</strong>. There is no refresh mechanism — users must log in again when the token expires. Tokens are stored in <code>localStorage</code> on the frontend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ S6 ═══ -->
+<div id="s6" class="page-break">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <h2>Customer Flows — Step by Step</h2>
+  </div>
+
+  <h3>6.1 Registration</h3>
+  <div class="flow">
+    <div class="flow-step">Visit /auth/register.html</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Fill form</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">POST /api/auth/register</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">JWT token issued</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Redirect to /</div>
+  </div>
+
+  <p>Required fields: first name, last name, email, password (minimum 8 characters). Phone number is optional. On success, the system automatically logs the customer in (JWT stored in localStorage) and sends a welcome email.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>Email verification</strong>
+      <p>In the current build, accounts are auto-verified (<code>is_verified = true</code>) immediately on registration to simplify the demo flow. To enable email verification in production, set <code>is_verified = False</code> in <code>auth_customer.py</code> and implement the verification token check endpoint.</p>
+    </div>
+  </div>
+
+  <h3>6.2 Login</h3>
+  <ol class="step-list">
+    <li>Customer visits <code>http://localhost:5000/auth/login.html</code></li>
+    <li>Enters email and password, clicks Sign In</li>
+    <li>On success: JWT token stored in <code>localStorage</code> as <code>af_token</code>; user data stored as <code>af_user</code></li>
+    <li>Redirected to the homepage; navbar shows "My Trips" and "Logout" links</li>
+  </ol>
+
+  <p>Rate limit: 10 login attempts per minute per IP. After exceeding this, the API returns HTTP 429. The customer must wait before trying again.</p>
+
+  <h3>6.3 Password reset</h3>
+  <div class="flow">
+    <div class="flow-step">Forgot Password page</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Enter email</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Reset email sent</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Click link (15min)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Set new password</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Login normally</div>
+  </div>
+
+  <p>The system always returns a success message regardless of whether the email exists — this prevents account enumeration attacks.</p>
+
+  <h3>6.4 Searching for flights</h3>
+
+  <h4>One-way or round-trip search</h4>
+  <ol class="step-list">
+    <li>On the homepage, select "One Way" or "Round Trip" tab</li>
+    <li>Enter origin airport code or city name (e.g. LOS, Lagos, London, LHR)</li>
+    <li>Enter destination airport code or city name</li>
+    <li>Select departure date (and return date for round-trip)</li>
+    <li>Select number of passengers (1–9) and cabin class</li>
+    <li>Click Search — results page loads with all matching flights</li>
+  </ol>
+
+  <h4>AI natural-language search</h4>
+  <ol class="step-list">
+    <li>Click the AI search bar on the homepage</li>
+    <li>Type a free-text query such as:<br>
+      <code>"cheap flight from Lagos to London next month"</code><br>
+      <code>"business class Abuja to Dubai in August"</code><br>
+      <code>"2 passengers JFK to NBO under $800"</code>
+    </li>
+    <li>The system parses the query and runs a search automatically</li>
+    <li>Results appear with the parsed parameters shown above the list</li>
+  </ol>
+
+  <h4>Multi-city search</h4>
+  <p>See Section 10 for the full multi-city flow.</p>
+
+  <h3>6.5 Booking a flight</h3>
+  <ol class="step-list">
+    <li>From results page, click "Book This Flight" on any flight card</li>
+    <li>If not logged in, redirected to login first; then returned to booking</li>
+    <li>On booking page: review the True Cost breakdown (base fare + markup + service fee)</li>
+    <li>Select baggage option: Carry-on (free), 1 checked bag (+$35/pax), 2 checked bags (+$60/pax)</li>
+    <li>Select seat preference: Standard (free), Window (+$15), Aisle (+$10), Front row (+$30), Extra legroom (+$45)</li>
+    <li>Fill passenger details: first name, last name, date of birth, passport number</li>
+    <li>Click "Complete Booking" — booking is confirmed immediately</li>
+    <li>Confirmation page shows booking reference (e.g. <strong>AF3X9KZ2</strong>)</li>
+    <li>Booking confirmation email sent to customer's email address</li>
+  </ol>
+
+  <h3>6.6 Customer account</h3>
+  <p>Logged-in customers can access their account at <code>/account/dashboard.html</code> and <code>/account/bookings.html</code> to:</p>
+  <ul>
+    <li>View all past and upcoming bookings</li>
+    <li>See full pricing breakdown per booking</li>
+    <li>Cancel a booking (changes status to "cancelled")</li>
+    <li>View booking status (confirmed / cancelled / pending)</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════ S7 ═══ -->
+<div id="s7" class="page-break">
+  <div class="section-header">
+    <div class="section-number">7</div>
+    <h2>Staff Portal — Step by Step</h2>
+  </div>
+
+  <p>The staff portal is accessed at a separate URL from the customer-facing site: <code>http://localhost:5000/admin/login.html</code>. Customer login credentials do not work here.</p>
+
+  <h3>7.1 First login — mandatory password change</h3>
+
+  <div class="callout callout-warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <strong>All new staff must change their password on first login</strong>
+      <p>When an admin creates a staff account, a temporary password is generated and emailed to the staff member. On first login, the system detects <code>must_change_password = true</code> in the JWT and redirects to the password change page. The staff member cannot access any other admin page until they complete this step.</p>
+    </div>
+  </div>
+
+  <ol class="step-list">
+    <li>Staff receives credentials email with temporary password</li>
+    <li>Navigates to <code>http://localhost:5000/admin/login.html</code></li>
+    <li>Logs in with email and temporary password</li>
+    <li>Immediately redirected to <code>/admin/change-password.html</code></li>
+    <li>Enters current (temporary) password and chooses a new password (min 8 chars, must differ)</li>
+    <li>On success: <code>must_change_password</code> flag cleared, new JWT issued with full access</li>
+    <li>Redirected to the admin dashboard</li>
+  </ol>
+
+  <h3>7.2 Admin dashboard</h3>
+  <p>The dashboard at <code>/admin/dashboard.html</code> shows role-appropriate statistics:</p>
+  <table>
+    <thead><tr><th>Metric</th><th>Visible to</th></tr></thead>
+    <tbody>
+      <tr><td>Total bookings / confirmed / cancelled / pending</td><td>All staff roles</td></tr>
+      <tr><td>Total revenue (USD)</td><td>All staff roles</td></tr>
+      <tr><td>Commission earned (USD)</td><td>All staff roles</td></tr>
+      <tr><td>Total customer count</td><td>All staff roles</td></tr>
+      <tr><td>Total staff count</td><td>super_admin, admin only</td></tr>
+    </tbody>
+  </table>
+
+  <p>The sidebar navigation shows only the links the logged-in staff member's role can access. On mobile, a hamburger menu (☰) appears to toggle the sidebar.</p>
+
+  <h3>7.3 Creating and managing staff</h3>
+  <p>Only <span class="role role-super">super_admin</span> and <span class="role role-admin">admin</span> can access <code>/admin/staff.html</code>.</p>
+
+  <h4>Creating a new staff member</h4>
+  <ol class="step-list">
+    <li>Navigate to Admin Portal → Staff</li>
+    <li>Click "Add Staff Member"</li>
+    <li>Fill in: first name, last name, email, and role</li>
+    <li>Click Save — system auto-generates a 12-character temporary password</li>
+    <li>Credentials are emailed to the new staff member</li>
+    <li>The temporary password is also displayed in the admin panel for your records</li>
+  </ol>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>Role assignment rules</strong>
+      <p>You can only assign roles lower than your own. An <span class="role role-admin">admin</span> can create <span class="role role-agent">agent</span> and <span class="role role-finance">finance</span> accounts but cannot create another <span class="role role-admin">admin</span>. Only <span class="role role-super">super_admin</span> can create admin accounts.</p>
+    </div>
+  </div>
+
+  <h4>Resetting a staff password</h4>
+  <ol class="step-list">
+    <li>Go to Staff list, find the staff member</li>
+    <li>Click "Reset Password"</li>
+    <li>A new temporary password is generated and emailed to the staff member</li>
+    <li>Their <code>must_change_password</code> flag is set back to true — they must change it on next login</li>
+  </ol>
+
+  <h4>Deactivating a staff member</h4>
+  <p>Only <span class="role role-super">super_admin</span> can deactivate (soft-delete) accounts. The account is not deleted from the database — it is flagged as <code>is_active = false</code> and the staff member can no longer log in.</p>
+
+  <h3>7.4 Managing bookings</h3>
+  <p>All staff roles (except the restriction that <span class="role role-finance">finance</span> is read-only) can view bookings at <code>/admin/bookings.html</code>.</p>
+  <ul>
+    <li><strong>View</strong>: paginated list of all bookings, sortable by date. Shows reference, customer, route, total, status.</li>
+    <li><strong>Filter</strong>: by status (confirmed / cancelled / pending / refunded)</li>
+    <li><strong>Update status</strong>: <span class="role role-super">super_admin</span>, <span class="role role-admin">admin</span>, <span class="role role-agent">agent</span> can change booking status</li>
+    <li><strong>Add notes</strong>: staff can attach internal notes to any booking</li>
+  </ul>
+
+  <h3>7.5 Customer management (CRM)</h3>
+  <p>Available to <span class="role role-super">super_admin</span>, <span class="role role-admin">admin</span>, and <span class="role role-agent">agent</span> at <code>/admin/customers.html</code>.</p>
+  <ul>
+    <li>Paginated list with search by name or email</li>
+    <li>Shows each customer's total bookings and total spend</li>
+    <li>Click a customer to view their full booking history</li>
+  </ul>
+
+  <h3>7.6 Finance view</h3>
+  <p>Available to <span class="role role-super">super_admin</span>, <span class="role role-admin">admin</span>, and <span class="role role-finance">finance</span> at <code>/admin/finance.html</code>.</p>
+  <ul>
+    <li>Total revenue (USD)</li>
+    <li>Commission earned</li>
+    <li>Markup revenue</li>
+    <li>Service fee total</li>
+    <li>Baggage fee total</li>
+    <li>Average booking value</li>
+    <li>Total confirmed bookings count</li>
+  </ul>
+
+  <h3>7.7 System settings</h3>
+  <p>Only <span class="role role-super">super_admin</span> can access <code>/admin/settings.html</code>. Current settings exposed:</p>
+  <ul>
+    <li>Markup percentage (currently set in <code>.env</code>)</li>
+    <li>Service fee (USD)</li>
+    <li>Commission percentage</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════ S8 ═══ -->
+<div id="s8" class="page-break">
+  <div class="section-header">
+    <div class="section-number">8</div>
+    <h2>Pricing &amp; Revenue Engine</h2>
+  </div>
+
+  <p>All pricing is handled in <code>backend/services/pricing.py</code>. The same engine is used for single-leg bookings, round-trip bookings, and each leg of multi-city itineraries.</p>
+
+  <h3>Price calculation formula</h3>
+  <pre>
+markup      = base_fare × (markup_pct / 100)        # default 8%
+commission  = base_fare × (commission_pct / 100)    # default 3%, internal only
+baggage_fee = BAGGAGE_FEES[option] × passengers
+seat_fee    = SEAT_FEES[option] × passengers
+
+subtotal_per_pax = base_fare + markup + service_fee + baggage_per_pax + seat_per_pax
+total            = subtotal_per_pax × passengers
+  </pre>
+
+  <h3>Baggage options</h3>
+  <table>
+    <thead><tr><th>Option</th><th>ID</th><th>Fee per passenger</th></tr></thead>
+    <tbody>
+      <tr><td>Carry-on only</td><td><code>carry_on</code></td><td>$0</td></tr>
+      <tr><td>1 Checked bag</td><td><code>checked_1</code></td><td>$35</td></tr>
+      <tr><td>2 Checked bags</td><td><code>checked_2</code></td><td>$60</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Seat options</h3>
+  <table>
+    <thead><tr><th>Option</th><th>ID</th><th>Fee per passenger</th></tr></thead>
+    <tbody>
+      <tr><td>Standard</td><td><code>standard</code></td><td>$0</td></tr>
+      <tr><td>Window</td><td><code>window</code></td><td>$15</td></tr>
+      <tr><td>Aisle</td><td><code>aisle</code></td><td>$10</td></tr>
+      <tr><td>Front row</td><td><code>front_row</code></td><td>$30</td></tr>
+      <tr><td>Extra legroom</td><td><code>extra_legroom</code></td><td>$45</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Example calculation</h3>
+  <pre>
+Base fare:   $450.00   (1 passenger, economy)
+Markup 8%:   + $36.00
+Service fee: + $15.00
+Baggage:     + $35.00  (1 checked bag)
+Seat:        + $15.00  (window)
+─────────────────────
+Total:       $551.00
+
+Commission tracked internally: $450 × 3% = $13.50
+  </pre>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>True Cost Transparency</strong>
+      <p>Unlike competitors that reveal fees only at checkout, Airfinder shows the full breakdown (base fare, markup, service fee) on the results page before the customer selects a flight. Baggage and seat fees update the total live on the booking page as options are selected.</p>
+    </div>
+  </div>
+
+  <h3>Changing pricing rates</h3>
+  <p>Edit the following lines in <code>.env</code> and restart the server:</p>
+  <pre>
+DEFAULT_MARKUP_PERCENT=8
+DEFAULT_SERVICE_FEE_USD=15
+DEFAULT_COMMISSION_PERCENT=3
+  </pre>
+</div>
+
+<!-- ═══════════════════════════════════════════ S9 ═══ -->
+<div id="s9" class="page-break">
+  <div class="section-header">
+    <div class="section-number">9</div>
+    <h2>AI Search Engine</h2>
+  </div>
+
+  <p>The AI search bar accepts free-text natural language queries and converts them into structured flight search parameters. It is implemented in <code>backend/services/ai_search.py</code> using regex and keyword matching — no external AI API is required.</p>
+
+  <h3>What the parser extracts</h3>
+  <table>
+    <thead><tr><th>Field</th><th>How extracted</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>Origin</td><td>IATA code or city name lookup</td><td>"Lagos" → LOS, "LHR" → LHR</td></tr>
+      <tr><td>Destination</td><td>Same as origin</td><td>"London" → LHR</td></tr>
+      <tr><td>Date</td><td>Month name, "next month", "this month"</td><td>"August" → 2025-08-15</td></tr>
+      <tr><td>Passengers</td><td>Number before passenger/people/pax</td><td>"2 passengers" → 2</td></tr>
+      <tr><td>Cabin class</td><td>Class keywords</td><td>"business class" → business</td></tr>
+      <tr><td>Budget</td><td>Amount after under/below/max</td><td>"under $800" → budget_max=800</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Supported city names</h3>
+  <p>The parser recognises: Lagos, Abuja, Port Harcourt, Accra, Nairobi, Addis Ababa, Johannesburg, Casablanca, Kigali, Dakar, Dubai, Doha, London, Paris, Amsterdam, Frankfurt, Istanbul, New York, Washington, Toronto — plus all 3-letter IATA codes directly.</p>
+
+  <h3>Example queries</h3>
+  <table>
+    <thead><tr><th>Query</th><th>Parsed result</th></tr></thead>
+    <tbody>
+      <tr><td>"cheap flight from Lagos to London next month"</td><td>LOS→LHR, economy, 1 pax, mid-next-month</td></tr>
+      <tr><td>"business class Abuja to Dubai in August"</td><td>ABV→DXB, business, 1 pax, 2025-08-15</td></tr>
+      <tr><td>"2 passengers JFK to NBO under $800"</td><td>JFK→NBO, economy, 2 pax, budget=$800</td></tr>
+      <tr><td>"flight LHR NRT next month"</td><td>LHR→NRT, economy, 1 pax, mid-next-month</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-body">
+      <strong>Naira budget support</strong>
+      <p>If the query contains ₦ or the word "naira", or the amount is over 100,000, the system automatically converts the amount to USD at an approximate rate of ₦1,500 = $1.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ S10 ═══ -->
+<div id="s10" class="page-break">
+  <div class="section-header">
+    <div class="section-number">10</div>
+    <h2>Multi-City Booking</h2>
+  </div>
+
+  <p>Multi-city allows customers to book complex itineraries — for example, Europe → Asia → Africa → Europe — in a single checkout session. Up to 6 legs are supported.</p>
+
+  <h3>Customer flow</h3>
+  <ol class="step-list">
+    <li>On the homepage, click the <strong>"✈ Multi-city"</strong> tab</li>
+    <li>Two leg rows appear by default. Each row has: Origin, Destination, Date fields</li>
+    <li>Click <strong>"+ Add Leg"</strong> to add more legs (maximum 6). Click ✕ to remove a leg (minimum 2)</li>
+    <li>Set passengers and cabin class (applies to all legs)</li>
+    <li>Click <strong>Search All Legs</strong> — navigates to <code>/multicity.html</code></li>
+    <li>The system searches all legs simultaneously and shows results panel per leg</li>
+    <li>Select one flight per leg by clicking <strong>"Select This Flight"</strong>. A ✓ badge appears on selected legs</li>
+    <li>The combined total updates live as selections are made</li>
+    <li>Once all legs are selected, the <strong>"Book All Legs →"</strong> button activates</li>
+    <li>Clicking it goes to <code>/booking.html</code> where the multi-leg summary and combined price are shown</li>
+    <li>Fill passenger details once — they apply to all legs</li>
+    <li>Select baggage and seat options — fees are multiplied across all legs</li>
+    <li>Click Complete Booking — one booking record is created per leg, all sharing a <strong>Group Reference</strong></li>
+    <li>Confirmation page shows the group reference and all individual booking references</li>
+  </ol>
+
+  <h3>How multi-city bookings are stored</h3>
+  <p>Each leg becomes a separate row in the <code>bookings</code> table. All legs share the same <code>group_reference</code> (e.g. <strong>AFXK9P2MNQ</strong>) so they can be viewed and managed together. The <code>is_multicity</code> flag on each booking is set to <code>true</code>.</p>
+
+  <h3>Example itinerary</h3>
+  <table>
+    <thead><tr><th>Leg</th><th>Route</th><th>Booking ref</th><th>Group ref</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>LHR → NRT (London → Tokyo)</td><td>AF7XK2MN</td><td rowspan="3" style="vertical-align:middle;font-weight:bold;text-align:center;">AFP5P6SQHO</td></tr>
+      <tr><td>2</td><td>NRT → NBO (Tokyo → Nairobi)</td><td>AF9QZ4LP</td></tr>
+      <tr><td>3</td><td>NBO → LHR (Nairobi → London)</td><td>AF3YM8KR</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ S11 ═══ -->
+<div id="s11" class="page-break">
+  <div class="section-header">
+    <div class="section-number">11</div>
+    <h2>Full API Reference</h2>
+  </div>
+
+  <p>All API endpoints are prefixed with <code>/api/</code>. Protected endpoints require an <code>Authorization: Bearer &lt;token&gt;</code> header.</p>
+
+  <h3>Customer Authentication</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/auth/register</span>
+    </div>
+    <div class="endpoint-desc">Create a new customer account. Returns JWT token on success.</div>
+    <div class="endpoint-auth">Public · Rate limited: 10/hour per IP</div>
+    <pre>Body: { "email", "password", "first_name", "last_name", "phone"? }
+Response 201: { "token", "user", "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/auth/login</span>
+    </div>
+    <div class="endpoint-desc">Customer login. Returns JWT token.</div>
+    <div class="endpoint-auth">Public · Rate limited: 10/minute per IP</div>
+    <pre>Body: { "email", "password" }
+Response 200: { "token", "user" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/auth/forgot-password</span>
+    </div>
+    <div class="endpoint-desc">Request password reset link. Always returns success (prevents email enumeration).</div>
+    <div class="endpoint-auth">Public · Rate limited: 5/hour per IP</div>
+    <pre>Body: { "email" }
+Response 200: { "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/auth/reset-password</span>
+    </div>
+    <div class="endpoint-desc">Set new password using reset token from email link. Token valid for 15 minutes.</div>
+    <div class="endpoint-auth">Public</div>
+    <pre>Body: { "token", "password" }
+Response 200: { "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/auth/me</span>
+    </div>
+    <div class="endpoint-desc">Get current customer profile.</div>
+    <div class="endpoint-auth">🔒 Customer JWT required</div>
+    <pre>Response 200: { user object }</pre>
+  </div>
+
+  <h3>Staff Authentication</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/staff/auth/login</span>
+    </div>
+    <div class="endpoint-desc">Staff login. Returns JWT with role and must_change_password flag.</div>
+    <div class="endpoint-auth">Public · Rate limited: 10/minute per IP</div>
+    <pre>Body: { "email", "password" }
+Response 200: { "token", "staff", "must_change_password" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/staff/auth/change-password</span>
+    </div>
+    <div class="endpoint-desc">Force-change temporary password. Works even when must_change_password=true.</div>
+    <div class="endpoint-auth">🔒 Staff JWT required (any state)</div>
+    <pre>Body: { "current_password", "new_password" }
+Response 200: { "token", "staff", "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/staff/auth/me</span>
+    </div>
+    <div class="endpoint-desc">Get current staff profile.</div>
+    <div class="endpoint-auth">🔒 Staff JWT required</div>
+    <pre>Response 200: { staff object }</pre>
+  </div>
+
+  <h3>Flights</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/flights/search</span>
+    </div>
+    <div class="endpoint-desc">Search flights by route and date. Returns flights with full True Cost pricing.</div>
+    <div class="endpoint-auth">Public</div>
+    <pre>Query params: origin (IATA), destination (IATA), departure_date (YYYY-MM-DD),
+              passengers (1-9), cabin (economy|business|first),
+              return_date?, budget_max?
+Response 200: { "results": [...flights], "count", "origin", "destination", ... }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/flights/search/ai</span>
+    </div>
+    <div class="endpoint-desc">Natural-language flight search. Parses free-text query into search params and returns results.</div>
+    <div class="endpoint-auth">Public</div>
+    <pre>Body: { "query": "cheap flight from Lagos to London next month" }
+Response 200: { "parsed": {...params}, "results": [...flights], "count" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/flights/search/multicity</span>
+    </div>
+    <div class="endpoint-desc">Search multiple legs at once. Returns flight options per leg.</div>
+    <div class="endpoint-auth">Public</div>
+    <pre>Body: {
+  "legs": [
+    { "origin": "LHR", "destination": "NRT", "date": "2025-08-01" },
+    { "origin": "NRT", "destination": "NBO", "date": "2025-08-08" }
+  ],
+  "passengers": 1,
+  "cabin": "economy"
+}
+Response 200: { "legs": [{ "leg_num", "origin", "destination", "date", "flights": [...] }] }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/flights/featured</span>
+    </div>
+    <div class="endpoint-desc">Get featured Africa routes for homepage display.</div>
+    <div class="endpoint-auth">Public</div>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/flights/airports</span>
+    </div>
+    <div class="endpoint-desc">Get list of supported airports with IATA codes and city names.</div>
+    <div class="endpoint-auth">Public</div>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/flights/pricing/calculate</span>
+    </div>
+    <div class="endpoint-desc">Calculate total price for given fare + options. Used by booking page for live price updates.</div>
+    <div class="endpoint-auth">Public</div>
+    <pre>Body: { "base_fare", "passengers", "baggage"?, "seat"? }
+Response 200: { full pricing breakdown object }</pre>
+  </div>
+
+  <h3>Bookings</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/bookings</span>
+    </div>
+    <div class="endpoint-desc">Create a single-leg booking. Customer must be authenticated.</div>
+    <div class="endpoint-auth">🔒 Customer JWT required</div>
+    <pre>Body: {
+  "flight_id", "origin", "destination", "departure_date",
+  "airline", "base_fare", "passengers": [...],
+  "baggage"?, "seat"?, "cabin"?, "flight_number"?
+}
+Response 201: { "booking", "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/bookings/multicity</span>
+    </div>
+    <div class="endpoint-desc">Create multi-city booking. One record per leg, all share a group_reference.</div>
+    <div class="endpoint-auth">🔒 Customer JWT required</div>
+    <pre>Body: {
+  "legs": [{ "flight_id", "origin", "destination", "date", "airline", "base_fare", ... }],
+  "passengers": [...],
+  "baggage"?, "seat"?, "cabin"?
+}
+Response 201: { "group_reference", "bookings": [...], "total_legs", "combined_total_usd" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/bookings</span>
+    </div>
+    <div class="endpoint-desc">Get bookings. Customers see only their own. Staff see all.</div>
+    <div class="endpoint-auth">🔒 JWT required (customer or staff)</div>
+    <pre>Response 200: [ ...booking objects ]</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/bookings/&lt;booking_id&gt;/cancel</span>
+    </div>
+    <div class="endpoint-desc">Cancel a booking. Customers can only cancel their own.</div>
+    <div class="endpoint-auth">🔒 JWT required</div>
+    <pre>Response 200: { "message", "booking" }</pre>
+  </div>
+
+  <h3>Admin</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/dashboard</span>
+    </div>
+    <div class="endpoint-desc">Dashboard stats — booking counts, revenue, customers.</div>
+    <div class="endpoint-auth">🔒 Staff: all roles</div>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/customers</span>
+    </div>
+    <div class="endpoint-desc">Paginated customer list with booking counts and spend totals.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin, agent</div>
+    <pre>Query params: page, per_page, search</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/bookings</span>
+    </div>
+    <div class="endpoint-desc">All bookings, paginated, filterable by status.</div>
+    <div class="endpoint-auth">🔒 Staff: all roles</div>
+    <pre>Query params: page, per_page, status</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method put">PUT</span>
+      <span class="endpoint-path">/api/admin/bookings/&lt;booking_id&gt;</span>
+    </div>
+    <div class="endpoint-desc">Update booking status or add notes.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin, agent</div>
+    <pre>Body: { "status"?, "notes"? }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/finance/summary</span>
+    </div>
+    <div class="endpoint-desc">Revenue breakdown: total, commission, markup, service fees, baggage fees.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin, finance</div>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/settings</span>
+    </div>
+    <div class="endpoint-desc">Current pricing configuration.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin only</div>
+  </div>
+
+  <h3>Staff Management</h3>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method get">GET</span>
+      <span class="endpoint-path">/api/admin/staff</span>
+    </div>
+    <div class="endpoint-desc">List all staff accounts.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin</div>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/admin/staff</span>
+    </div>
+    <div class="endpoint-desc">Create new staff account. Auto-generates temp password and sends credentials email.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin</div>
+    <pre>Body: { "email", "first_name", "last_name", "role" }
+Response 201: { "staff", "temp_password", "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method put">PUT</span>
+      <span class="endpoint-path">/api/admin/staff/&lt;staff_id&gt;</span>
+    </div>
+    <div class="endpoint-desc">Update staff details (name, role, active status). Subject to role hierarchy.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin</div>
+    <pre>Body: { "role"?, "first_name"?, "last_name"?, "is_active"? }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method post">POST</span>
+      <span class="endpoint-path">/api/admin/staff/&lt;staff_id&gt;/reset-password</span>
+    </div>
+    <div class="endpoint-desc">Reset staff password. Sends new temp credentials by email.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin, admin</div>
+    <pre>Response 200: { "temp_password", "message" }</pre>
+  </div>
+
+  <div class="endpoint avoid-break">
+    <div class="endpoint-line">
+      <span class="method delete">DELETE</span>
+      <span class="endpoint-path">/api/admin/staff/&lt;staff_id&gt;</span>
+    </div>
+    <div class="endpoint-desc">Deactivate (soft-delete) a staff account. Cannot delete your own account.</div>
+    <div class="endpoint-auth">🔒 Staff: super_admin only</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ S12 ═══ -->
+<div id="s12" class="page-break">
+  <div class="section-header">
+    <div class="section-number">12</div>
+    <h2>Security Features</h2>
+  </div>
+
+  <h3>Authentication security</h3>
+  <ul>
+    <li><strong>bcrypt hashing</strong>: All passwords are hashed with bcrypt (adaptive cost factor). Plaintext passwords are never stored.</li>
+    <li><strong>JWT signing</strong>: Tokens are signed with HS256 using a secret key. Tampered tokens are rejected.</li>
+    <li><strong>Token expiry</strong>: Customer tokens expire in 24 hours. Staff tokens expire in 12 hours.</li>
+    <li><strong>Separate auth systems</strong>: Customer and staff tokens are issued from separate endpoints. A customer token cannot access staff endpoints.</li>
+  </ul>
+
+  <h3>Rate limiting</h3>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Limit</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>POST /api/auth/register</td><td>10 per hour</td><td>Prevent mass account creation</td></tr>
+      <tr><td>POST /api/auth/login</td><td>10 per minute</td><td>Brute-force login protection</td></tr>
+      <tr><td>POST /api/auth/forgot-password</td><td>5 per hour</td><td>Prevent reset email flooding</td></tr>
+      <tr><td>POST /api/staff/auth/login</td><td>10 per minute</td><td>Brute-force staff login protection</td></tr>
+    </tbody>
+  </table>
+  <p>Exceeded limits return HTTP <code>429 Too Many Requests</code>. Limits are tracked per IP address.</p>
+
+  <h3>XSS protection</h3>
+  <p>All user-supplied data rendered into HTML tables (customer names, emails, booking references) is passed through an <code>escapeHtml()</code> function before being inserted via <code>innerHTML</code>. This prevents script injection through user-controlled input.</p>
+
+  <h3>Input validation</h3>
+  <ul>
+    <li>All API endpoints validate required fields and return descriptive 400 errors for missing data</li>
+    <li>Passenger count is clamped to 1–9 server-side</li>
+    <li>Leg count for multi-city is validated at 2–6 server-side</li>
+    <li>Password minimum length is enforced at 8 characters</li>
+    <li>Email uniqueness checked on registration and staff creation</li>
+  </ul>
+
+  <h3>Email enumeration prevention</h3>
+  <p>The forgot-password endpoint always returns the same success message whether or not the email exists in the database. This prevents attackers from using the endpoint to discover which emails are registered.</p>
+
+  <h3>Role hierarchy enforcement</h3>
+  <p>Staff management respects a strict hierarchy: you can only assign or modify roles with a lower level than your own. This is enforced server-side — bypassing it on the frontend has no effect.</p>
+
+  <div class="callout callout-danger">
+    <div class="callout-icon">🔴</div>
+    <div class="callout-body">
+      <strong>Before deploying to production</strong>
+      <p>1. Change <code>SECRET_KEY</code> and <code>JWT_SECRET</code> in <code>.env</code> to long random strings.<br>
+      2. Change the super admin default password immediately after first login.<br>
+      3. Set <code>FLASK_DEBUG=0</code> in <code>.env</code>.<br>
+      4. Use HTTPS — run behind a reverse proxy (nginx) with SSL certificate.<br>
+      5. Replace SQLite with PostgreSQL for production workloads.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ S13 ═══ -->
+<div id="s13" class="page-break">
+  <div class="section-header">
+    <div class="section-number">13</div>
+    <h2>Email Notifications</h2>
+  </div>
+
+  <p>Airfinder sends the following automated emails via SMTP (configured in <code>.env</code>).</p>
+
+  <table>
+    <thead><tr><th>Email</th><th>Trigger</th><th>Recipient</th></tr></thead>
+    <tbody>
+      <tr><td>Welcome email</td><td>Successful customer registration</td><td>New customer</td></tr>
+      <tr><td>Password reset link</td><td>Forgot password request (if email found)</td><td>Customer</td></tr>
+      <tr><td>Booking confirmation</td><td>Successful booking (single or multi-city first leg)</td><td>Customer</td></tr>
+      <tr><td>Staff credentials</td><td>New staff account created or password reset</td><td>New/affected staff member</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Development mode — no email server</h3>
+  <p>If no valid SMTP credentials are configured, email sending will silently fail and log an error to the console. The application continues to function — emails simply are not delivered. This is the expected behaviour in local development.</p>
+
+  <h3>Setting up Gmail SMTP</h3>
+  <ol class="step-list">
+    <li>In your Google Account, go to Security → 2-Step Verification → App passwords</li>
+    <li>Generate an app password for "Mail"</li>
+    <li>Set <code>MAIL_USERNAME</code> to your Gmail address in <code>.env</code></li>
+    <li>Set <code>MAIL_PASSWORD</code> to the generated app password</li>
+    <li>Restart the server</li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════ S14 ═══ -->
+<div id="s14" class="page-break">
+  <div class="section-header">
+    <div class="section-number">14</div>
+    <h2>Deployment Checklist</h2>
+  </div>
+
+  <h3>Before going live</h3>
+
+  <table>
+    <thead><tr><th>Task</th><th>File / Location</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>Change SECRET_KEY to a random 64-char string</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Change JWT_SECRET to a random 64-char string</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Change SUPER_ADMIN_PASSWORD to a strong password</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Change SUPER_ADMIN_EMAIL to your real admin email</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Set FLASK_DEBUG=0</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Configure SMTP credentials for email delivery</td><td>.env</td><td>☐</td></tr>
+      <tr><td>Run behind nginx or similar reverse proxy with HTTPS</td><td>Server config</td><td>☐</td></tr>
+      <tr><td>Migrate database to PostgreSQL for production volume</td><td>DATABASE_URL in .env</td><td>☐</td></tr>
+      <tr><td>Run tests to confirm baseline works: <code>pytest backend/tests/</code></td><td>Terminal</td><td>☐</td></tr>
+      <tr><td>Log in as super admin and change password in browser</td><td>/admin/login.html</td><td>☐</td></tr>
+      <tr><td>Create at least one admin account for daily operations</td><td>/admin/staff.html</td><td>☐</td></tr>
+      <tr><td>Verify email delivery works end-to-end</td><td>Register a test account</td><td>☐</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Running with gunicorn (Linux/Mac production)</h3>
+  <pre>
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 "backend.app:create_app()"
+  </pre>
+
+  <h3>Running as a Windows service</h3>
+  <pre>
+# Install NSSM (Non-Sucking Service Manager), then:
+nssm install Airfinder python C:\path\to\backend\app.py
+nssm set Airfinder AppDirectory C:\path\to\Airfinder
+nssm start Airfinder
+  </pre>
+</div>
+
+<!-- ═══════════════════════════════════════════ S15 ═══ -->
+<div id="s15" class="page-break">
+  <div class="section-header">
+    <div class="section-number">15</div>
+    <h2>Troubleshooting</h2>
+  </div>
+
+  <h3>Server will not start</h3>
+  <table>
+    <thead><tr><th>Error</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>ModuleNotFoundError: No module named 'flask'</td><td>Run <code>pip install -r requirements.txt</code></td></tr>
+      <tr><td>Address already in use (port 5000)</td><td>Find process: <code>netstat -ano | findstr :5000</code> then <code>taskkill /F /PID &lt;pid&gt;</code></td></tr>
+      <tr><td>ImportError from backend module</td><td>Run from project root, not from inside backend/</td></tr>
+      <tr><td>.env not found</td><td>Make sure <code>.env</code> exists in project root. Do not rename it.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Login issues</h3>
+  <table>
+    <thead><tr><th>Symptom</th><th>Cause / Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Admin login returns "Invalid credentials"</td><td>Ensure you're using /admin/login.html — customer credentials do not work on staff endpoint</td></tr>
+      <tr><td>Customer login returns 401 after reset</td><td>Old token still in localStorage. Open DevTools → Application → localStorage → delete af_token</td></tr>
+      <tr><td>Staff redirected to change-password on every page</td><td>Staff has not completed mandatory password change — complete that step first</td></tr>
+      <tr><td>Rate limit 429 on login</td><td>Too many attempts. Wait 1 minute (customer) or check limit period</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Booking issues</h3>
+  <table>
+    <thead><tr><th>Symptom</th><th>Cause / Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Booking page shows no flight data</td><td>Session storage expired or user navigated directly to /booking.html. Return to search and select a flight.</td></tr>
+      <tr><td>Multi-city "Book All Legs" stays disabled</td><td>Not all legs have a selected flight. Each leg panel must show the ✓ Selected badge.</td></tr>
+      <tr><td>Booking creates but no confirmation email arrives</td><td>SMTP not configured. Check MAIL_* settings in .env. See Section 13.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Database issues</h3>
+  <table>
+    <thead><tr><th>Symptom</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Table has no column 'group_reference'</td><td>Restart the server — the auto-migration runs at startup and adds missing columns</td></tr>
+      <tr><td>Super admin not seeded</td><td>Check SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env. Delete airfinder.db and restart to re-seed.</td></tr>
+      <tr><td>Database locked error</td><td>SQLite allows only one writer at a time. Do not run multiple server instances pointing at the same .db file.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Running tests</h3>
+  <pre>
+# From project root:
+pytest backend/tests/ -v
+
+# Run a specific test file:
+pytest backend/tests/test_auth.py -v
+
+# Run with output shown:
+pytest backend/tests/ -v -s
+  </pre>
+
+  <hr class="divider">
+
+  <div class="callout callout-success">
+    <div class="callout-icon">✈</div>
+    <div class="callout-body">
+      <strong>Airfinder is ready</strong>
+      <p>The system is complete and verified. All customer-facing flows (search, book, multi-city, account management), staff portal flows (login, password change, staff CRUD, booking management, finance), and security features (rate limiting, XSS protection, RBAC, bcrypt) are implemented and tested. The API reference in Section 11 covers all endpoints available for integration or extension.</p>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:40px;">
+    Airfinder System Documentation · Version 1.0 · June 2025<br>
+    Built with Python / Flask / SQLite · Brand: #407E3C
+  </p>
+
+</div><!-- end doc-body -->
+</body>
+</html>

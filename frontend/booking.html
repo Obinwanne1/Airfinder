@@ -128,9 +128,27 @@
 <script>
 let flight = null;
 let passengerCount = 1;
+let mcBooking = null; // multi-city booking data
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Auth.requireLogin()) return;
+
+  // Multi-city mode
+  const rawMc = sessionStorage.getItem('af_mc_booking');
+  if (rawMc) {
+    mcBooking = JSON.parse(rawMc);
+    passengerCount = mcBooking.passengers || 1;
+    renderMcFlightSummary();
+    renderPassengerForms();
+    renderMcPriceSummary();
+    document.getElementById('next-to-addons').addEventListener('click', validatePassengers);
+    document.getElementById('next-to-payment').addEventListener('click', () => goToStep(3));
+    document.getElementById('complete-booking-btn').addEventListener('click', completeMcBooking);
+    document.querySelectorAll('input[name=baggage], input[name=seat]').forEach(el => {
+      el.addEventListener('change', renderMcPriceSummary);
+    });
+    return;
+  }
 
   const raw = sessionStorage.getItem('af_flight');
   if (!raw) { window.location.href = '/'; return; }
@@ -319,6 +337,81 @@ function showAlert(msg, type = 'error') {
   document.getElementById('alert-container').innerHTML =
     `<div class="alert alert-${type}">${msg}</div>`;
   window.scrollTo(0, 0);
+}
+
+// ===== MULTI-CITY FUNCTIONS =====
+function renderMcFlightSummary() {
+  const legs = mcBooking.legs;
+  const route = legs.map((l, i) => `${l.origin}${i === legs.length - 1 ? ' → ' + l.destination : ''}`).join(' → ');
+  document.getElementById('flight-summary').innerHTML = `
+    <div style="margin-bottom:8px;">
+      <span class="badge badge-blue">✈ Multi-city · ${legs.length} Legs</span>
+    </div>
+    ${legs.map((leg, i) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i < legs.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
+        <div>
+          <div style="font-weight:700;">Leg ${i+1}: ${leg.origin} → ${leg.destination}</div>
+          <div class="text-gray text-sm">${leg.airline} · ${leg.flight_number} · ${leg.date}</div>
+          <div class="text-gray text-sm">${leg.departure_time} → ${leg.arrival_time} · ${leg.cabin}</div>
+        </div>
+        <div style="font-weight:700;color:var(--green);">$${leg.pricing.total.toFixed(2)}</div>
+      </div>`).join('')}
+    <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:1.1rem;font-weight:900;">
+      <span>Combined Total</span>
+      <span style="color:var(--green);">$${mcBooking.combined_total.toFixed(2)}</span>
+    </div>`;
+}
+
+function renderMcPriceSummary() {
+  const baggage = document.querySelector('input[name=baggage]:checked')?.value || 'carry_on';
+  const seat = document.querySelector('input[name=seat]:checked')?.value || 'standard';
+  const BAGGAGE = { carry_on: 0, checked_1: 35, checked_2: 60 };
+  const SEAT = { standard: 0, window: 15, aisle: 10, extra_legroom: 45, front_row: 30 };
+  const baggageFee = (BAGGAGE[baggage] || 0) * passengerCount * mcBooking.legs.length;
+  const seatFee = (SEAT[seat] || 0) * passengerCount * mcBooking.legs.length;
+  const addons = baggageFee + seatFee;
+  const grandTotal = mcBooking.combined_total + addons;
+
+  document.getElementById('price-breakdown').innerHTML = `
+    ${mcBooking.legs.map((leg, i) => `
+      <div class="price-line text-sm">
+        <span>Leg ${i+1}: ${leg.origin}→${leg.destination}</span>
+        <span>$${leg.pricing.total.toFixed(2)}</span>
+      </div>`).join('')}
+    <hr class="divider">
+    <div class="price-line"><span>Subtotal (${mcBooking.legs.length} legs)</span><span>$${mcBooking.combined_total.toFixed(2)}</span></div>
+    ${baggageFee > 0 ? `<div class="price-line"><span>Baggage (all legs)</span><span>$${baggageFee.toFixed(2)}</span></div>` : ''}
+    ${seatFee > 0 ? `<div class="price-line"><span>Seat selection (all legs)</span><span>$${seatFee.toFixed(2)}</span></div>` : ''}
+    <div class="price-line total"><span>Grand Total</span><span style="color:var(--green);">$${grandTotal.toFixed(2)}</span></div>`;
+}
+
+async function completeMcBooking() {
+  const btn = document.getElementById('complete-booking-btn');
+  btn.disabled = true; btn.textContent = 'Processing...';
+
+  const baggage = document.querySelector('input[name=baggage]:checked')?.value || 'carry_on';
+  const seat = document.querySelector('input[name=seat]:checked')?.value || 'standard';
+
+  try {
+    const result = await api.post('/bookings/multicity', {
+      legs: mcBooking.legs,
+      passengers: getPassengers(),
+      baggage, seat,
+      cabin: mcBooking.cabin,
+    });
+    sessionStorage.setItem('af_booking', JSON.stringify({
+      ...result.bookings[0],
+      is_multicity: true,
+      group_reference: result.group_reference,
+      total_legs: result.total_legs,
+      combined_total_usd: result.combined_total_usd,
+    }));
+    sessionStorage.removeItem('af_mc_booking');
+    window.location.href = '/confirmation.html';
+  } catch (e) {
+    showAlert(e.message || 'Booking failed. Please try again.', 'error');
+    btn.disabled = false; btn.textContent = '✅ Complete Booking';
+  }
 }
 </script>
 </body>

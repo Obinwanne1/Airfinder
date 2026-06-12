@@ -3,12 +3,14 @@ from flask_cors import CORS
 import os
 from backend.config import Config
 from backend.models.database import init_db
+from backend.extensions import limiter
 
 def create_app():
     app = Flask(__name__, static_folder='../frontend', static_url_path='')
     app.config.from_object(Config)
 
     CORS(app, resources={r'/api/*': {'origins': '*'}})
+    limiter.init_app(app)
 
     init_db(app)
 

@@ -61,43 +61,69 @@
       <div class="search-tabs">
         <button class="search-tab active" data-tab="oneway">One Way</button>
         <button class="search-tab" data-tab="roundtrip">Round Trip</button>
+        <button class="search-tab" data-tab="multicity">✈ Multi-city</button>
       </div>
-      <div class="search-fields">
-        <div class="search-field">
-          <div class="search-field-label">From</div>
-          <span class="search-field-icon">✈</span>
-          <input class="form-control" type="text" id="origin" placeholder="Lagos (LOS)" list="airports-list">
+
+      <!-- One-way / Round-trip panel -->
+      <div id="panel-simple">
+        <div class="search-fields">
+          <div class="search-field">
+            <div class="search-field-label">From</div>
+            <span class="search-field-icon">✈</span>
+            <input class="form-control" type="text" id="origin" placeholder="Lagos (LOS)" list="airports-list">
+          </div>
+          <div class="search-field">
+            <div class="search-field-label">To</div>
+            <span class="search-field-icon">📍</span>
+            <input class="form-control" type="text" id="destination" placeholder="London (LHR)" list="airports-list">
+          </div>
+          <div class="search-field">
+            <div class="search-field-label">Date</div>
+            <span class="search-field-icon">📅</span>
+            <input class="form-control" type="date" id="departure_date">
+          </div>
+          <div class="search-field">
+            <div class="search-field-label">Passengers & Class</div>
+            <span class="search-field-icon">👤</span>
+            <select class="form-control" id="passengers_cabin">
+              <option value="1|economy">1 Passenger — Economy</option>
+              <option value="1|business">1 Passenger — Business</option>
+              <option value="1|first">1 Passenger — First</option>
+              <option value="2|economy">2 Passengers — Economy</option>
+              <option value="2|business">2 Passengers — Business</option>
+              <option value="3|economy">3 Passengers — Economy</option>
+              <option value="4|economy">4 Passengers — Economy</option>
+            </select>
+          </div>
+          <button class="search-btn" id="searchBtn">🔍 Search</button>
         </div>
-        <div class="search-field">
-          <div class="search-field-label">To</div>
-          <span class="search-field-icon">📍</span>
-          <input class="form-control" type="text" id="destination" placeholder="London (LHR)" list="airports-list">
+        <div id="return-date-row" class="hidden" style="margin-top:12px;">
+          <div class="search-field" style="max-width:280px;">
+            <div class="search-field-label">Return Date</div>
+            <span class="search-field-icon">📅</span>
+            <input class="form-control" type="date" id="return_date">
+          </div>
         </div>
-        <div class="search-field">
-          <div class="search-field-label">Date</div>
-          <span class="search-field-icon">📅</span>
-          <input class="form-control" type="date" id="departure_date">
-        </div>
-        <div class="search-field">
-          <div class="search-field-label">Passengers & Class</div>
-          <span class="search-field-icon">👤</span>
-          <select class="form-control" id="passengers_cabin">
-            <option value="1|economy">1 Passenger — Economy</option>
-            <option value="1|business">1 Passenger — Business</option>
-            <option value="1|first">1 Passenger — First</option>
-            <option value="2|economy">2 Passengers — Economy</option>
-            <option value="2|business">2 Passengers — Business</option>
-            <option value="3|economy">3 Passengers — Economy</option>
-            <option value="4|economy">4 Passengers — Economy</option>
-          </select>
-        </div>
-        <button class="search-btn" id="searchBtn">🔍 Search</button>
       </div>
-      <div id="return-date-row" class="hidden" style="margin-top:12px;">
-        <div class="search-field" style="max-width:280px;">
-          <div class="search-field-label">Return Date</div>
-          <span class="search-field-icon">📅</span>
-          <input class="form-control" type="date" id="return_date">
+
+      <!-- Multi-city panel -->
+      <div id="panel-multicity" class="hidden">
+        <div class="mc-legs" id="mc-legs-container"></div>
+        <button class="mc-add-leg" id="mc-add-leg-btn">+ Add Another Leg</button>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:14px;align-items:end;">
+          <div class="search-field">
+            <div class="search-field-label">Passengers & Class</div>
+            <select class="form-control" id="mc-passengers-cabin">
+              <option value="1|economy">1 Passenger — Economy</option>
+              <option value="1|business">1 Passenger — Business</option>
+              <option value="1|first">1 Passenger — First</option>
+              <option value="2|economy">2 Passengers — Economy</option>
+              <option value="2|business">2 Passengers — Business</option>
+              <option value="3|economy">3 Passengers — Economy</option>
+              <option value="4|economy">4 Passengers — Economy</option>
+            </select>
+          </div>
+          <button class="search-btn" id="mc-search-btn">🔍 Search Flights</button>
         </div>
       </div>
     </div>
@@ -257,9 +283,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      document.getElementById('return-date-row').classList.toggle('hidden', tab.dataset.tab !== 'roundtrip');
+      const t = tab.dataset.tab;
+      document.getElementById('return-date-row').classList.toggle('hidden', t !== 'roundtrip');
+      document.getElementById('panel-simple').classList.toggle('hidden', t === 'multicity');
+      document.getElementById('panel-multicity').classList.toggle('hidden', t !== 'multicity');
     });
   });
+
+  // Multi-city leg builder
+  initMultiCity();
 
   // Manual search
   document.getElementById('searchBtn').addEventListener('click', doSearch);
@@ -289,6 +321,82 @@ function doSearch() {
   const params = new URLSearchParams({ origin, destination, departure_date, passengers: pc[0], cabin: pc[1] });
   if (return_date) params.set('return_date', return_date);
   window.location.href = `/results.html?${params}`;
+}
+
+// ===== MULTI-CITY =====
+let mcLegCount = 0;
+
+function initMultiCity() {
+  addMcLeg(); // start with 2 legs
+  addMcLeg();
+  document.getElementById('mc-add-leg-btn').addEventListener('click', () => {
+    if (mcLegCount < 6) addMcLeg();
+    else alert('Maximum 6 legs allowed.');
+  });
+  document.getElementById('mc-search-btn').addEventListener('click', doMultiCitySearch);
+}
+
+function addMcLeg() {
+  mcLegCount++;
+  const idx = mcLegCount;
+  const today = new Date();
+  today.setDate(today.getDate() + 14 + (idx - 1) * 3);
+  const defaultDate = today.toISOString().split('T')[0];
+  const min = new Date().toISOString().split('T')[0];
+
+  const div = document.createElement('div');
+  div.className = 'mc-leg';
+  div.dataset.leg = idx;
+  div.innerHTML = `
+    <div class="mc-leg-num" style="grid-column:1/-1;">Leg ${idx}</div>
+    <div class="search-field">
+      <div class="search-field-label">From</div>
+      <input class="form-control mc-origin" data-leg="${idx}" placeholder="City or IATA" list="airports-list">
+    </div>
+    <div class="mc-arrow">→</div>
+    <div class="search-field">
+      <div class="search-field-label">To</div>
+      <input class="form-control mc-dest" data-leg="${idx}" placeholder="City or IATA" list="airports-list">
+    </div>
+    <div class="search-field">
+      <div class="search-field-label">Date</div>
+      <input class="form-control mc-date" data-leg="${idx}" type="date" value="${defaultDate}" min="${min}">
+    </div>
+    ${idx > 2 ? `<button class="mc-remove" onclick="removeMcLeg(this)" title="Remove leg">✕</button>` : '<div></div>'}
+  `;
+  document.getElementById('mc-legs-container').appendChild(div);
+}
+
+function removeMcLeg(btn) {
+  btn.closest('.mc-leg').remove();
+  mcLegCount--;
+  // Re-number remaining legs
+  document.querySelectorAll('.mc-leg').forEach((el, i) => {
+    el.querySelector('.mc-leg-num').textContent = `Leg ${i + 1}`;
+    el.dataset.leg = i + 1;
+  });
+}
+
+function doMultiCitySearch() {
+  const legs = [];
+  let valid = true;
+  document.querySelectorAll('.mc-leg').forEach((legEl, i) => {
+    const origin = extractIATA(legEl.querySelector('.mc-origin').value.trim());
+    const destination = extractIATA(legEl.querySelector('.mc-dest').value.trim());
+    const date = legEl.querySelector('.mc-date').value;
+    if (!origin || !destination || !date) { valid = false; }
+    legs.push({ origin, destination, date });
+  });
+
+  if (!valid || legs.length < 2) {
+    alert('Please fill in From, To, and Date for all legs.');
+    return;
+  }
+
+  const pc = document.getElementById('mc-passengers-cabin').value.split('|');
+  sessionStorage.setItem('af_mc_legs', JSON.stringify(legs));
+  sessionStorage.setItem('af_mc_pax', JSON.stringify({ passengers: pc[0], cabin: pc[1] }));
+  window.location.href = '/multicity.html';
 }
 
 async function doAiSearch() {

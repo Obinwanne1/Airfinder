@@ -1,14 +1,32 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text, inspect as sa_inspect
 
 db = SQLAlchemy()
 
 def init_db(app):
     db.init_app(app)
     with app.app_context():
-        # Import all models so SQLAlchemy registers their tables before create_all
         from backend.models import user, staff, booking  # noqa: F401
         db.create_all()
+        _migrate_existing(app)
         _seed_super_admin(app)
+
+def _migrate_existing(app):
+    """Add columns introduced after initial schema without dropping data."""
+    inspector = sa_inspect(db.engine)
+    if 'bookings' not in inspector.get_table_names():
+        return
+    existing = {c['name'] for c in inspector.get_columns('bookings')}
+    additions = []
+    if 'group_reference' not in existing:
+        additions.append('ALTER TABLE bookings ADD COLUMN group_reference VARCHAR(20)')
+    if 'is_multicity' not in existing:
+        additions.append('ALTER TABLE bookings ADD COLUMN is_multicity BOOLEAN DEFAULT 0')
+    if additions:
+        with db.engine.connect() as conn:
+            for stmt in additions:
+                conn.execute(text(stmt))
+            conn.commit()
 
 def _seed_super_admin(app):
     from backend.models.staff import Staff, StaffRole

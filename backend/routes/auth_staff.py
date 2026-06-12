@@ -6,10 +6,12 @@ from flask import Blueprint, request, jsonify, current_app, g
 from backend.models.database import db
 from backend.models.staff import Staff, StaffRole
 from backend.middleware.jwt_guard import staff_required
+from backend.extensions import limiter
 
 bp = Blueprint('auth_staff', __name__, url_prefix='/api/staff/auth')
 
 @bp.route('/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def staff_login():
     data = request.get_json()
     if not data.get('email') or not data.get('password'):
