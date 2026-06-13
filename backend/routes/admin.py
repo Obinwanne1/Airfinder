@@ -87,8 +87,15 @@ def all_bookings():
             pass
 
     paginated = query.order_by(Booking.created_at.desc()).paginate(page=page, per_page=per_page)
+    bookings = []
+    for b in paginated.items:
+        d = b.to_dict()
+        user = User.query.get(b.user_id)
+        d['customer_name'] = f"{user.first_name} {user.last_name}" if user else "Guest"
+        d['customer_email'] = user.email if user else "—"
+        bookings.append(d)
     return jsonify({
-        'bookings': [b.to_dict() for b in paginated.items],
+        'bookings': bookings,
         'total': paginated.total,
         'pages': paginated.pages,
         'page': page,

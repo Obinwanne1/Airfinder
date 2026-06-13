@@ -31,7 +31,7 @@ def create_staff():
         return jsonify({'error': f'Invalid role. Valid: {[r.value for r in StaffRole]}'}), 400
 
     actor_role = StaffRole(g.role)
-    if not can_manage(actor_role, role):
+    if actor_role != StaffRole.SUPER_ADMIN and not can_manage(actor_role, role):
         return jsonify({'error': 'Cannot assign a role equal to or above your own'}), 403
 
     if Staff.query.filter_by(email=data['email'].lower()).first():
@@ -73,7 +73,7 @@ def update_staff(staff_id):
     staff = Staff.query.get_or_404(staff_id)
     actor_role = StaffRole(g.role)
 
-    if not can_manage(actor_role, staff.role):
+    if actor_role != StaffRole.SUPER_ADMIN and not can_manage(actor_role, staff.role):
         return jsonify({'error': 'Cannot modify staff with equal or higher role'}), 403
 
     data = request.get_json()
