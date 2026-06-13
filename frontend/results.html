@@ -63,12 +63,6 @@
       </div>
 
       <div class="filter-group">
-        <div class="filter-group-title">Route Type</div>
-        <label class="filter-option"><input type="checkbox" id="filter-africa" checked> Africa Routes</label>
-        <label class="filter-option"><input type="checkbox" id="filter-global" checked> Global Routes</label>
-      </div>
-
-      <div class="filter-group">
         <div class="filter-group-title">OTA Trust</div>
         <label class="filter-option"><input type="checkbox" class="filter-ota" value="verified" checked> ✓ Verified only</label>
       </div>
@@ -147,8 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Filters
   document.querySelectorAll('.filter-stops, .filter-ota').forEach(el => el.addEventListener('change', applyFilters));
-  document.getElementById('filter-africa').addEventListener('change', applyFilters);
-  document.getElementById('filter-global').addEventListener('change', applyFilters);
   document.getElementById('price-filter').addEventListener('input', function() {
     document.getElementById('price-label').textContent = `$${this.value}`;
     applyFilters();
@@ -175,11 +167,6 @@ function applyFilters() {
   // Price filter
   const maxPrice = parseFloat(document.getElementById('price-filter').value);
   results = results.filter(f => f.pricing.total <= maxPrice);
-
-  // Route type
-  const showAfrica = document.getElementById('filter-africa').checked;
-  const showGlobal = document.getElementById('filter-global').checked;
-  results = results.filter(f => (f.is_africa_route && showAfrica) || (!f.is_africa_route && showGlobal));
 
   // Sort
   const sort = document.getElementById('sort-select').value;
@@ -214,8 +201,6 @@ function clearFilters() {
   document.querySelectorAll('.filter-stops').forEach(el => el.checked = true);
   document.getElementById('price-filter').value = 3000;
   document.getElementById('price-label').textContent = '$3000';
-  document.getElementById('filter-africa').checked = true;
-  document.getElementById('filter-global').checked = true;
   applyFilters();
 }
 </script>

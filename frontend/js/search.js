@@ -44,7 +44,7 @@ const Search = {
     const isAfrica = flight.is_africa_route;
 
     const africaBadge = isAfrica
-      ? `<span class="africa-badge">✈ Africa Direct</span>`
+      ? `<span class="africa-badge">✈ Direct</span>`
       : '';
 
     const breakdown = `

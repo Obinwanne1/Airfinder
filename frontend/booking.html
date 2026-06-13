@@ -185,7 +185,7 @@ function renderFlightSummary() {
         <div style="font-size:1.2rem;font-weight:800;">${flight.origin} → ${flight.destination}</div>
         <div class="text-gray text-sm">${flight.airline} · ${flight.flight_number} · ${flight.departure_date}</div>
         <div class="text-gray text-sm">${flight.departure_time} → ${flight.arrival_time} · ${flight.cabin}</div>
-        ${flight.is_africa_route ? '<span class="badge badge-green mt-1">✈ Africa Direct</span>' : ''}
+        ${flight.is_africa_route ? '<span class="badge badge-green mt-1">✈ Direct</span>' : ''}
       </div>
       <div style="text-align:right;">
         <div style="font-size:1.4rem;font-weight:900;color:var(--green);">$${p.total.toFixed(2)}</div>
