@@ -194,7 +194,7 @@
     </div>
     <div style="text-align:center;margin-top:36px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <a href="/admin/login.html" class="btn btn-primary btn-lg">View Staff Portal</a>
-      <a href="mailto:support@airfinder.com?subject=Demo Request — Corporate Travel" class="btn btn-secondary btn-lg">Request a Demo Call</a>
+      <button class="btn btn-secondary btn-lg" onclick="document.getElementById('demo-modal').classList.remove('hidden')">Request a Demo Call</button>
     </div>
   </div>
 </section>
@@ -305,6 +305,42 @@
     </div>
   </div>
 </footer>
+
+<!-- DEMO REQUEST MODAL -->
+<div id="demo-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div style="background:#fff;border-radius:16px;padding:36px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);position:relative;">
+    <button onclick="document.getElementById('demo-modal').classList.add('hidden')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:20px;color:#9ca3af;">✕</button>
+    <h3 style="margin-bottom:6px;">Request a Demo Call</h3>
+    <p class="text-sm text-gray" style="margin-bottom:24px;">Tell us about your team and we'll schedule a walkthrough tailored to your needs.</p>
+    <div id="demo-form-wrap">
+      <form id="demo-form" onsubmit="submitDemoRequest(event)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#4b5563;display:block;margin-bottom:4px;">Full Name *</label>
+            <input required type="text" id="demo-name" placeholder="Emeka Okafor" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;" onfocus="this.style.borderColor='#407E3C'" onblur="this.style.borderColor='#e5e7eb'">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#4b5563;display:block;margin-bottom:4px;">Company *</label>
+            <input required type="text" id="demo-company" placeholder="Zenith Bank PLC" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;" onfocus="this.style.borderColor='#407E3C'" onblur="this.style.borderColor='#e5e7eb'">
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;font-weight:600;color:#4b5563;display:block;margin-bottom:4px;">Work Email *</label>
+          <input required type="email" id="demo-email" placeholder="emeka@yourcompany.com" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;" onfocus="this.style.borderColor='#407E3C'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;font-weight:600;color:#4b5563;display:block;margin-bottom:4px;">Phone / WhatsApp</label>
+          <input type="tel" id="demo-phone" placeholder="+234 801 234 5678" style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;" onfocus="this.style.borderColor='#407E3C'" onblur="this.style.borderColor='#e5e7eb'">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px;font-weight:600;color:#4b5563;display:block;margin-bottom:4px;">What are you looking to solve?</label>
+          <textarea id="demo-message" rows="3" placeholder="e.g. We manage travel for 200 staff and need better oversight and cost control..." style="width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:14px;outline:none;resize:vertical;" onfocus="this.style.borderColor='#407E3C'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="demo-submit-btn">Send Request</button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
@@ -454,6 +490,30 @@ function doMultiCitySearch() {
   sessionStorage.setItem('af_mc_legs', JSON.stringify(legs));
   sessionStorage.setItem('af_mc_pax', JSON.stringify({ passengers: pc[0], cabin: pc[1] }));
   window.location.href = '/multicity.html';
+}
+
+async function submitDemoRequest(e) {
+  e.preventDefault();
+  const btn = document.getElementById('demo-submit-btn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  const payload = {
+    name: document.getElementById('demo-name').value,
+    company: document.getElementById('demo-company').value,
+    email: document.getElementById('demo-email').value,
+    phone: document.getElementById('demo-phone').value,
+    message: document.getElementById('demo-message').value,
+  };
+  try {
+    await api.post('/demo-request', payload);
+  } catch {}
+  document.getElementById('demo-form-wrap').innerHTML = `
+    <div style="text-align:center;padding:20px 0;">
+      <div style="width:56px;height:56px;background:#e8f5e4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#407E3C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h4 style="color:#407E3C;margin-bottom:8px;">Request Received!</h4>
+      <p class="text-sm text-gray">Thanks, <strong>${payload.name.split(' ')[0]}</strong>. We'll reach out to <strong>${payload.email}</strong> within 24 hours to schedule your demo.</p>
+    </div>`;
 }
 
 async function doAiSearch() {

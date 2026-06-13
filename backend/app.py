@@ -22,6 +22,25 @@ def create_app():
     app.register_blueprint(admin.bp)
     app.register_blueprint(staff_mgmt.bp)
 
+    @app.route('/api/demo-request', methods=['POST'])
+    def demo_request():
+        from flask import request
+        import json, datetime
+        data = request.get_json(silent=True) or {}
+        entry = {
+            'timestamp': datetime.datetime.utcnow().isoformat(),
+            'name': data.get('name', ''),
+            'company': data.get('company', ''),
+            'email': data.get('email', ''),
+            'phone': data.get('phone', ''),
+            'message': data.get('message', ''),
+        }
+        log_path = os.path.join(os.path.dirname(__file__), '..', 'demo_requests.log')
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(entry) + '\n')
+        print(f"[DEMO REQUEST] {entry['name']} <{entry['email']}> — {entry['company']}")
+        return jsonify({'message': 'Request received'}), 201
+
     @app.route('/')
     def index():
         return send_from_directory(app.static_folder, 'index.html')
