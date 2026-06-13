@@ -32,24 +32,36 @@
 <section class="hero">
   <div class="container hero-content">
     <div class="hero-eyebrow">
-      Global with Africa Focus &nbsp;|&nbsp; AI-Powered Search
+      Corporate Travel Platform &nbsp;|&nbsp; Built for Africa &nbsp;|&nbsp; AI-Powered
     </div>
-    <h1>Find Flights.<br><em>See Every Fee.</em><br>Book With Confidence.</h1>
+    <h1>Take Control of<br>Corporate Travel.<br><em>Zero Hidden Costs.</em></h1>
     <p class="hero-sub">
-      The only flight search that shows your <strong>true total cost</strong> — base fare, markup, baggage, seat fees — before you click. No bait-and-switch. Ever.
+      Built for Nigerian corporate travel teams. Role-based staff access, real-time booking oversight, and full spend analytics — with <strong>zero hidden fees</strong> on every booking.
     </p>
 
-    <div class="trust-bar">
-      <div class="trust-item">True Cost Engine</div>
-      <div class="trust-item">Verified OTA Partners</div>
-      <div class="trust-item">Africa Route Intelligence</div>
-      <div class="trust-item">AI Smart Search</div>
+    <div class="trust-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">
+      <div class="trust-item" style="display:flex;flex-direction:column;align-items:center;padding:14px 10px;border-right:1px solid rgba(255,255,255,0.12);">
+        <span style="font-size:1.3rem;font-weight:800;color:#fff;">8%</span>
+        <span style="font-size:11px;opacity:.75;margin-top:2px;">Avg. Markup</span>
+      </div>
+      <div class="trust-item" style="display:flex;flex-direction:column;align-items:center;padding:14px 10px;border-right:1px solid rgba(255,255,255,0.12);">
+        <span style="font-size:1.3rem;font-weight:800;color:#fff;">$15</span>
+        <span style="font-size:11px;opacity:.75;margin-top:2px;">Flat Service Fee</span>
+      </div>
+      <div class="trust-item" style="display:flex;flex-direction:column;align-items:center;padding:14px 10px;border-right:1px solid rgba(255,255,255,0.12);">
+        <span style="font-size:1.3rem;font-weight:800;color:#fff;">4</span>
+        <span style="font-size:11px;opacity:.75;margin-top:2px;">Staff Role Levels</span>
+      </div>
+      <div class="trust-item" style="display:flex;flex-direction:column;align-items:center;padding:14px 10px;">
+        <span style="font-size:1.3rem;font-weight:800;color:#fff;">100%</span>
+        <span style="font-size:11px;opacity:.75;margin-top:2px;">Cost Transparency</span>
+      </div>
     </div>
 
     <!-- AI Search Bar -->
     <div class="ai-search-bar" id="aiBar">
       <span class="ai-icon">AI</span>
-      <input type="text" id="aiInput" placeholder='Try: "cheap flight from Lagos to London next month"' autocomplete="off">
+      <input type="text" id="aiInput" placeholder='Try: "3 business class seats Lagos to London next Tuesday"' autocomplete="off">
       <span class="ai-badge">AI</span>
       <button class="btn btn-primary btn-sm" id="aiSearchBtn">Search</button>
     </div>
@@ -138,6 +150,51 @@
     <p class="text-gray mb-3">Top picks for African travelers — best prices updated daily</p>
     <div class="featured-grid" id="featuredGrid">
       <div class="spinner" style="margin:20px auto;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CORPORATE SECTION -->
+<section class="section" style="background:var(--gray-100);border-top:1px solid var(--gray-200);border-bottom:1px solid var(--gray-200);">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div style="display:inline-block;background:var(--green-pale);color:var(--green);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:12px;">Built for Corporate Teams</div>
+      <h2>Why Finance Directors<br>and Travel Managers Choose Airfinder</h2>
+      <p class="text-gray mt-2" style="max-width:560px;margin:8px auto 0;">Other platforms were built for consumers. Airfinder was built for the people who manage travel at scale — and have to answer for every naira spent.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:32px;">
+      <div class="card card-body" style="border-left:4px solid var(--green);">
+        <div style="width:40px;height:40px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#407E3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h4>Role-Based Staff Access</h4>
+        <p class="text-sm text-gray mt-1">Finance, Agent, Admin, Super Admin — each role sees exactly what they need. No shared passwords, no accidental overwrites, full audit trail.</p>
+      </div>
+      <div class="card card-body" style="border-left:4px solid var(--green);">
+        <div style="width:40px;height:40px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#407E3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </div>
+        <h4>Real-Time Spend Analytics</h4>
+        <p class="text-sm text-gray mt-1">Live dashboard showing total revenue, commission earned, service fees, and per-booking breakdown. Your finance team has their own dedicated view — no access to operational controls.</p>
+      </div>
+      <div class="card card-body" style="border-left:4px solid var(--green);">
+        <div style="width:40px;height:40px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#407E3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg>
+        </div>
+        <h4>Agent Booking Desk</h4>
+        <p class="text-sm text-gray mt-1">Travel agents book flights on behalf of employees through a dedicated staff portal. Every booking is tracked, attributed to an agent, and manageable from the admin console.</p>
+      </div>
+      <div class="card card-body" style="border-left:4px solid var(--green);">
+        <div style="width:40px;height:40px;background:var(--green-pale);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#407E3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <h4>True Cost Engine</h4>
+        <p class="text-sm text-gray mt-1">Base fare, markup, service fee — all shown before payment. Your employees see exactly what they're spending. Your finance team can verify every line. No surprises, ever.</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:36px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="/admin/login.html" class="btn btn-primary btn-lg">View Staff Portal</a>
+      <a href="mailto:support@airfinder.com?subject=Demo Request — Corporate Travel" class="btn btn-secondary btn-lg">Request a Demo Call</a>
     </div>
   </div>
 </section>
