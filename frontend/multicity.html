@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (e) {
     document.getElementById('mc-panels').innerHTML = `
       <div class="no-results">
-        <div class="no-results-icon">😔</div>
+        
         <h3>Search failed</h3>
         <p class="text-gray mt-1">${e.message || 'Could not search flights. Please try again.'}</p>
         <a href="/" class="btn btn-primary mt-3">← New Search</a>
