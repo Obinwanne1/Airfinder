@@ -28,6 +28,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'phone': self.phone,
+            'is_active': self.is_active,
             'is_verified': self.is_verified,
             'created_at': self.created_at.isoformat()
         }

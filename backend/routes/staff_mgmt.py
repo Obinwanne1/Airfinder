@@ -103,7 +103,7 @@ def reset_staff_password(staff_id):
     staff = Staff.query.get_or_404(staff_id)
     actor_role = StaffRole(g.role)
 
-    if not can_manage(actor_role, staff.role):
+    if actor_role != StaffRole.SUPER_ADMIN and not can_manage(actor_role, staff.role):
         return jsonify({'error': 'Cannot reset password for staff with equal or higher role'}), 403
 
     temp_password = _generate_temp_password()

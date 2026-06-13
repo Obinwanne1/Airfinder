@@ -33,8 +33,7 @@ def _seed_super_admin(app):
     from backend.config import Config
     import bcrypt
 
-    existing = Staff.query.filter_by(email=Config.SUPER_ADMIN_EMAIL).first()
-    if existing:
+    if Staff.query.filter_by(role=StaffRole.SUPER_ADMIN).first():
         return
 
     hashed = bcrypt.hashpw(Config.SUPER_ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt())
