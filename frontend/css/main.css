@@ -259,3 +259,80 @@ h4 { font-size: 1rem; font-weight: 600; }
 .hidden { display: none !important; }
 .w-full { width: 100%; }
 .divider { border: none; border-top: 1px solid var(--gray-200); margin: 20px 0; }
+
+/* ===== MOBILE NAVBAR ===== */
+.navbar { position: relative; }
+@media (max-width: 768px) {
+  .navbar-links.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    position: absolute;
+    top: 64px;
+    left: 0; right: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 8px 16px 16px;
+    gap: 2px;
+    z-index: 99;
+    box-shadow: var(--shadow);
+  }
+  .navbar-links.mobile-open .btn {
+    display: inline-flex;
+    width: auto;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+}
+
+/* ===== HERO STATS GRID ===== */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  margin-bottom: 28px;
+}
+.hero-stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 10px;
+  border-right: 1px solid rgba(255,255,255,0.12);
+}
+.hero-stats-item:last-child { border-right: none; }
+.hero-stats-value { font-size: 1.3rem; font-weight: 800; color: #fff; }
+.hero-stats-label { font-size: 11px; opacity: .75; margin-top: 2px; color: rgba(255,255,255,.9); }
+@media (max-width: 580px) {
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .hero-stats-item:nth-child(2) { border-right: none; }
+  .hero-stats-item:nth-child(3),
+  .hero-stats-item:nth-child(4) { border-top: 1px solid rgba(255,255,255,0.12); }
+}
+
+/* ===== DEMO FORM GRID ===== */
+.demo-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 480px) {
+  .demo-form-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY & LAYOUT ===== */
+@media (max-width: 768px) {
+  h1 { font-size: 1.9rem; }
+  h2 { font-size: 1.35rem; }
+  .section { padding: 40px 0; }
+  .container { padding: 0 16px; }
+}
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.2rem; }
+  .container { padding: 0 14px; }
+  .btn-lg { padding: 12px 22px; font-size: 15px; }
+}

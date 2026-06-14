@@ -456,3 +456,62 @@
   color: var(--gray-400);
 }
 .no-results-icon { font-size: 48px; margin-bottom: 16px; }
+
+/* ===== HERO MOBILE ===== */
+@media (max-width: 768px) {
+  .hero { padding: 48px 0 36px; }
+  .hero h1 { font-size: 2rem; }
+  .hero-sub { font-size: 1rem; margin-bottom: 28px; }
+  .ai-search-bar input { font-size: 14px; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.65rem; }
+  .hero-sub { margin-bottom: 20px; }
+  .hero-eyebrow { font-size: 12px; }
+  .search-form { padding: 16px; }
+  .search-tabs { gap: 2px; }
+  .search-tab { padding: 7px 12px; font-size: 13px; }
+}
+
+/* ===== FLIGHT CARD MOBILE ===== */
+@media (max-width: 620px) {
+  .flight-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .flight-card-pricing {
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  .flight-card-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .true-cost-total { font-size: 1.3rem; }
+  .ota-options { padding: 10px 16px; }
+}
+
+/* ===== RESULTS SEARCH BAR MOBILE ===== */
+@media (max-width: 600px) {
+  .results-search-bar { flex-direction: column; }
+  .results-search-bar .form-control { max-width: 100% !important; }
+  .results-search-bar button { width: 100%; }
+}
+
+/* ===== FILTER SIDEBAR MOBILE ===== */
+@media (max-width: 860px) {
+  .filter-sidebar {
+    position: static;
+  }
+}
+
+/* ===== MC LEG MOBILE ===== */
+@media (max-width: 480px) {
+  .mc-leg { grid-template-columns: 1fr; }
+  .mc-arrow { display: none; }
+  .mc-remove { grid-column: auto; }
+}

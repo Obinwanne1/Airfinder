@@ -86,4 +86,19 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/';
     });
   });
+
+  // Mobile navbar hamburger toggle
+  const navInner = document.querySelector('.navbar-inner');
+  const navLinks = document.querySelector('.navbar-links');
+  if (navInner && navLinks) {
+    const btn = document.createElement('button');
+    btn.className = 'navbar-menu';
+    btn.setAttribute('aria-label', 'Toggle navigation');
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+    navInner.appendChild(btn);
+    btn.addEventListener('click', () => navLinks.classList.toggle('mobile-open'));
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('mobile-open'));
+    });
+  }
 });
