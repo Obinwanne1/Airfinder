@@ -36,8 +36,16 @@ const Admin = {
     return api.get('/admin/finance/summary');
   },
 
-  formatCurrency(usd) {
-    return `$${Number(usd).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  formatCurrency(amount) {
+    if (amount == null || isNaN(amount)) return '—';
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(Number(amount));
+  },
+
+  formatDate(isoStr) {
+    if (!isoStr) return '—';
+    try {
+      return new Intl.DateTimeFormat('de-DE', { timeZone: 'Europe/Berlin', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(isoStr));
+    } catch { return isoStr; }
   },
 
   statusBadge(status) {

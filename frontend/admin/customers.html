@@ -80,7 +80,7 @@ function renderCustomers(customers) {
       <td>${escapeHtml(c.phone) || '—'}</td>
       <td>${c.booking_count}</td>
       <td>${Admin.formatCurrency(c.total_spent)}</td>
-      <td class="text-sm text-gray">${new Date(c.created_at).toLocaleDateString()}</td>
+      <td class="text-sm text-gray">${Admin.formatDate(c.created_at)}</td>
       <td>${c.is_active ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Inactive</span>'}</td>
     </tr>`).join('');
 }

@@ -49,11 +49,11 @@ const Search = {
 
     const breakdown = `
       <div class="true-cost-breakdown">
-        <span class="cost-item">Base $${p.base_fare}</span>
-        <span class="cost-item">Markup $${p.markup}</span>
-        <span class="cost-item">Service $${p.service_fee}</span>
-        ${p.baggage_fee > 0 ? `<span class="cost-item">Baggage $${p.baggage_fee}</span>` : ''}
-        ${p.seat_fee > 0 ? `<span class="cost-item">Seat $${p.seat_fee}</span>` : ''}
+        <span class="cost-item">Base ${fmtCurrency(p.base_fare)}</span>
+        <span class="cost-item">Markup ${fmtCurrency(p.markup)}</span>
+        <span class="cost-item">Service ${fmtCurrency(p.service_fee)}</span>
+        ${p.baggage_fee > 0 ? `<span class="cost-item">Baggage ${fmtCurrency(p.baggage_fee)}</span>` : ''}
+        ${p.seat_fee > 0 ? `<span class="cost-item">Seat ${fmtCurrency(p.seat_fee)}</span>` : ''}
       </div>
     `;
 
@@ -62,7 +62,7 @@ const Search = {
         <span class="ota-name">${ota.ota_name}</span>
         <span class="${ota.verified ? 'ota-verified' : 'ota-unverified'}">${ota.verified ? '✓' : '⚠'}</span>
         <div class="trust-score ${this.trustColor(ota.trust_score)}">★${ota.trust_score}</div>
-        <span class="ota-price">$${ota.price.toFixed(2)}</span>
+        <span class="ota-price">${fmtCurrency(ota.price)}</span>
       </div>
     `).join('');
 
@@ -103,7 +103,7 @@ const Search = {
         <div class="flight-card-pricing">
           <div class="true-cost">
             <div class="true-cost-label">Total True Cost — no surprises</div>
-            <div class="true-cost-total">$${p.total.toFixed(2)}</div>
+            <div class="true-cost-total">${fmtCurrency(p.total)}</div>
             ${breakdown}
           </div>
           <div class="flight-card-actions">
@@ -126,7 +126,7 @@ const Search = {
         <div class="route-to">${route.label}</div>
         <div class="route-airline">${route.airline}</div>
         <div class="route-price">
-          <span class="route-price-from">from </span>$${route.price_from}
+          <span class="route-price-from">from </span>${fmtCurrency(route.price_from)}
         </div>
       </div>
     `;
@@ -160,7 +160,7 @@ function holdPrice(flightId, price) {
     window.location.href = '/auth/login.html';
     return;
   }
-  alert(`Price held for 24 hours at $${price.toFixed(2)}. A small hold fee of $5 will be charged. (Demo mode — no actual charge)`);
+  alert(`Price held for 24 hours at ${fmtCurrency(price)}. A small hold fee of €5 will be charged. (Demo mode — no actual charge)`);
 }
 
 function quickSearch(origin, destination) {

@@ -59,6 +59,7 @@
 
 </div>
 
+<script src="/js/locale.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script src="/js/search.js"></script>
@@ -169,11 +170,11 @@ function renderMcFlightCard(flight, legNum) {
       <div class="flight-card-pricing">
         <div class="true-cost">
           <div class="true-cost-label">Leg price — True Cost</div>
-          <div class="true-cost-total">$${p.total.toFixed(2)}</div>
+          <div class="true-cost-total">${fmtCurrency(p.total)}</div>
           <div class="true-cost-breakdown">
-            <span class="cost-item">Base $${p.base_fare}</span>
-            <span class="cost-item">Markup $${p.markup}</span>
-            <span class="cost-item">Fee $${p.service_fee}</span>
+            <span class="cost-item">Base ${fmtCurrency(p.base_fare)}</span>
+            <span class="cost-item">Markup ${fmtCurrency(p.markup)}</span>
+            <span class="cost-item">Fee ${fmtCurrency(p.service_fee)}</span>
           </div>
         </div>
         <div class="flight-card-actions">
@@ -200,7 +201,7 @@ function selectLegFlight(legNum, flightId) {
   // Mark panel as selected
   document.getElementById(`leg-panel-${legNum}`).classList.add('selected');
   document.getElementById(`leg-badge-${legNum}`).innerHTML =
-    `<span class="mc-selected-badge">✓ Selected · $${flight.pricing.total.toFixed(2)}</span>`;
+    `<span class="mc-selected-badge">✓ Selected · ${fmtCurrency(flight.pricing.total)}</span>`;
 
   updateTotalBar();
 }
@@ -210,7 +211,7 @@ function updateTotalBar() {
   const selectedCount = Object.keys(selections).length;
   const combinedTotal = Object.values(selections).reduce((s, f) => s + f.pricing.total, 0);
 
-  document.getElementById('mc-combined-total').textContent = `$${combinedTotal.toFixed(2)}`;
+  document.getElementById('mc-combined-total').textContent = fmtCurrency(combinedTotal);
   document.getElementById('mc-total-label').textContent =
     selectedCount === totalLegs
       ? `All ${totalLegs} legs selected — ready to book!`

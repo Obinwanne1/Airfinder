@@ -53,18 +53,18 @@
           <h4 class="mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Baggage</h4>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <label class="filter-option"><input type="radio" name="baggage" value="carry_on" checked> Carry-on only — Free</label>
-            <label class="filter-option"><input type="radio" name="baggage" value="checked_1"> 1 Checked bag — $35 per passenger</label>
-            <label class="filter-option"><input type="radio" name="baggage" value="checked_2"> 2 Checked bags — $60 per passenger</label>
+            <label class="filter-option"><input type="radio" name="baggage" value="checked_1"> 1 Checked bag — €35 per passenger</label>
+            <label class="filter-option"><input type="radio" name="baggage" value="checked_2"> 2 Checked bags — €60 per passenger</label>
           </div>
         </div>
         <div class="card card-body mb-3">
           <h4 class="mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="12" height="8" rx="2"/><path d="M6 10V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"/><line x1="9" y1="22" x2="9" y2="18"/><line x1="15" y1="22" x2="15" y2="18"/></svg> Seat Preference</h4>
           <div style="display:flex;flex-direction:column;gap:8px;">
             <label class="filter-option"><input type="radio" name="seat" value="standard" checked> Standard — Free</label>
-            <label class="filter-option"><input type="radio" name="seat" value="window"> Window seat — $15 per passenger</label>
-            <label class="filter-option"><input type="radio" name="seat" value="aisle"> Aisle seat — $10 per passenger</label>
-            <label class="filter-option"><input type="radio" name="seat" value="extra_legroom"> Extra legroom — $45 per passenger</label>
-            <label class="filter-option"><input type="radio" name="seat" value="front_row"> Front row — $30 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="window"> Window seat — €15 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="aisle"> Aisle seat — €10 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="extra_legroom"> Extra legroom — €45 per passenger</label>
+            <label class="filter-option"><input type="radio" name="seat" value="front_row"> Front row — €30 per passenger</label>
           </div>
         </div>
         <div style="display:flex;gap:10px;">
@@ -123,6 +123,7 @@
   </div>
 </div>
 
+<script src="/js/locale.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script>
@@ -188,7 +189,7 @@ function renderFlightSummary() {
         ${flight.is_africa_route ? '<span class="badge badge-green mt-1">✈ Direct</span>' : ''}
       </div>
       <div style="text-align:right;">
-        <div style="font-size:1.4rem;font-weight:900;color:var(--green);">$${p.total.toFixed(2)}</div>
+        <div style="font-size:1.4rem;font-weight:900;color:var(--green);">${fmtCurrency(p.total)}</div>
         <div class="text-gray text-sm">for ${passengerCount} passenger${passengerCount>1?'s':''}</div>
       </div>
     </div>`;
@@ -280,13 +281,13 @@ async function updatePriceSummary() {
 
 function renderPriceBreakdown(p) {
   document.getElementById('price-breakdown').innerHTML = `
-    <div class="price-line"><span>Base fare (×${p.passengers || passengerCount})</span><span>$${(p.base_fare * (p.passengers || passengerCount)).toFixed(2)}</span></div>
-    <div class="price-line"><span>Markup (${p.markup_pct || 8}%)</span><span>$${(p.markup * (p.passengers || passengerCount)).toFixed(2)}</span></div>
-    <div class="price-line"><span>Service fee</span><span>$${p.service_fee.toFixed(2)}</span></div>
-    ${p.baggage_fee > 0 ? `<div class="price-line"><span>Baggage</span><span>$${p.baggage_fee.toFixed(2)}</span></div>` : ''}
-    ${p.seat_fee > 0 ? `<div class="price-line"><span>Seat selection</span><span>$${p.seat_fee.toFixed(2)}</span></div>` : ''}
-    <div class="price-line total"><span>Total</span><span style="color:var(--green);">$${p.total.toFixed(2)}</span></div>
-    <div class="text-xs text-gray" style="margin-top:8px;">We earn: commission $${p.commission?.toFixed(2) || '—'} + service fee $${p.service_fee.toFixed(2)}</div>`;
+    <div class="price-line"><span>Base fare (×${p.passengers || passengerCount})</span><span>${fmtCurrency(p.base_fare * (p.passengers || passengerCount))}</span></div>
+    <div class="price-line"><span>Markup (${p.markup_pct || 8}%)</span><span>${fmtCurrency(p.markup * (p.passengers || passengerCount))}</span></div>
+    <div class="price-line"><span>Service fee</span><span>${fmtCurrency(p.service_fee)}</span></div>
+    ${p.baggage_fee > 0 ? `<div class="price-line"><span>Baggage</span><span>${fmtCurrency(p.baggage_fee)}</span></div>` : ''}
+    ${p.seat_fee > 0 ? `<div class="price-line"><span>Seat selection</span><span>${fmtCurrency(p.seat_fee)}</span></div>` : ''}
+    <div class="price-line total"><span>Total</span><span style="color:var(--green);">${fmtCurrency(p.total)}</span></div>
+    <div class="text-xs text-gray" style="margin-top:8px;">We earn: commission ${p.commission ? fmtCurrency(p.commission) : '—'} + service fee ${fmtCurrency(p.service_fee)}</div>`;
 }
 
 function getPassengers() {
@@ -354,11 +355,11 @@ function renderMcFlightSummary() {
           <div class="text-gray text-sm">${leg.airline} · ${leg.flight_number} · ${leg.date}</div>
           <div class="text-gray text-sm">${leg.departure_time} → ${leg.arrival_time} · ${leg.cabin}</div>
         </div>
-        <div style="font-weight:700;color:var(--green);">$${leg.pricing.total.toFixed(2)}</div>
+        <div style="font-weight:700;color:var(--green);">${fmtCurrency(leg.pricing.total)}</div>
       </div>`).join('')}
     <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:1.1rem;font-weight:900;">
       <span>Combined Total</span>
-      <span style="color:var(--green);">$${mcBooking.combined_total.toFixed(2)}</span>
+      <span style="color:var(--green);">${fmtCurrency(mcBooking.combined_total)}</span>
     </div>`;
 }
 
@@ -376,13 +377,13 @@ function renderMcPriceSummary() {
     ${mcBooking.legs.map((leg, i) => `
       <div class="price-line text-sm">
         <span>Leg ${i+1}: ${leg.origin}→${leg.destination}</span>
-        <span>$${leg.pricing.total.toFixed(2)}</span>
+        <span>${fmtCurrency(leg.pricing.total)}</span>
       </div>`).join('')}
     <hr class="divider">
-    <div class="price-line"><span>Subtotal (${mcBooking.legs.length} legs)</span><span>$${mcBooking.combined_total.toFixed(2)}</span></div>
-    ${baggageFee > 0 ? `<div class="price-line"><span>Baggage (all legs)</span><span>$${baggageFee.toFixed(2)}</span></div>` : ''}
-    ${seatFee > 0 ? `<div class="price-line"><span>Seat selection (all legs)</span><span>$${seatFee.toFixed(2)}</span></div>` : ''}
-    <div class="price-line total"><span>Grand Total</span><span style="color:var(--green);">$${grandTotal.toFixed(2)}</span></div>`;
+    <div class="price-line"><span>Subtotal (${mcBooking.legs.length} legs)</span><span>${fmtCurrency(mcBooking.combined_total)}</span></div>
+    ${baggageFee > 0 ? `<div class="price-line"><span>Baggage (all legs)</span><span>${fmtCurrency(baggageFee)}</span></div>` : ''}
+    ${seatFee > 0 ? `<div class="price-line"><span>Seat selection (all legs)</span><span>${fmtCurrency(seatFee)}</span></div>` : ''}
+    <div class="price-line total"><span>Grand Total</span><span style="color:var(--green);">${fmtCurrency(grandTotal)}</span></div>`;
 }
 
 async function completeMcBooking() {

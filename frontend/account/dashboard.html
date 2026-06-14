@@ -58,6 +58,7 @@
     </main>
   </div>
 </div>
+<script src="/js/locale.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script>
@@ -74,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bookings = await api.get('/bookings');
     document.getElementById('stat-bookings').textContent = bookings.length;
     const spent = bookings.filter(b => b.status === 'confirmed').reduce((s, b) => s + b.pricing.total, 0);
-    document.getElementById('stat-spent').textContent = `$${spent.toFixed(2)}`;
+    document.getElementById('stat-spent').textContent = fmtCurrency(spent);
     const now = new Date().toISOString().split('T')[0];
     const upcoming = bookings.filter(b => b.status === 'confirmed' && b.departure_date >= now).length;
     document.getElementById('stat-upcoming').textContent = upcoming;
@@ -91,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="booking-card-body">
             <div class="booking-route">${b.origin} → ${b.destination}</div>
-            <div class="booking-detail">${b.airline} · ${b.departure_date} · $${b.pricing.total.toFixed(2)}</div>
+            <div class="booking-detail">${b.airline} · ${b.departure_date} · ${fmtCurrency(b.pricing.total)}</div>
           </div>
         </div>`).join('');
     }

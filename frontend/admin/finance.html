@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="price-line"><span>Average booking value</span><span><strong>${Admin.formatCurrency(data.avg_booking_value)}</strong></span></div>
       <div class="price-line"><span>Commission (3% of base fare)</span><span>${Admin.formatCurrency(data.commission_usd)}</span></div>
       <div class="price-line"><span>Markup (8% of base fare)</span><span>${Admin.formatCurrency(data.markup_usd)}</span></div>
-      <div class="price-line"><span>Service fee ($15/booking)</span><span>${Admin.formatCurrency(data.service_fees_usd)}</span></div>
+      <div class="price-line"><span>Service fee (€15/booking)</span><span>${Admin.formatCurrency(data.service_fees_usd)}</span></div>
       <div class="price-line"><span>Baggage fees</span><span>${Admin.formatCurrency(data.baggage_fees_usd)}</span></div>
       <hr class="divider">
       <div class="price-line total"><span>Total Airfinder Earnings</span><span style="color:var(--green);">${Admin.formatCurrency(data.total_revenue_usd)}</span></div>`;
