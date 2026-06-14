@@ -57,9 +57,9 @@
       </div>
 
       <div class="filter-group">
-        <div class="filter-group-title">Max Price (USD)</div>
+        <div class="filter-group-title">Max Price (EUR)</div>
         <input type="range" class="filter-range" id="price-filter" min="50" max="3000" value="3000">
-        <div class="filter-range-labels"><span>$50</span><span id="price-label">$3000</span></div>
+        <div class="filter-range-labels"><span>€50</span><span id="price-label">€3000</span></div>
       </div>
 
       <div class="filter-group">
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Filters
   document.querySelectorAll('.filter-stops, .filter-ota').forEach(el => el.addEventListener('change', applyFilters));
   document.getElementById('price-filter').addEventListener('input', function() {
-    document.getElementById('price-label').textContent = `$${this.value}`;
+    document.getElementById('price-label').textContent = `€${this.value}`;
     applyFilters();
   });
   document.getElementById('clear-filters').addEventListener('click', clearFilters);
@@ -201,7 +201,7 @@ function renderResults(results) {
 function clearFilters() {
   document.querySelectorAll('.filter-stops').forEach(el => el.checked = true);
   document.getElementById('price-filter').value = 3000;
-  document.getElementById('price-label').textContent = '$3000';
+  document.getElementById('price-label').textContent = '€3000';
   applyFilters();
 }
 </script>
