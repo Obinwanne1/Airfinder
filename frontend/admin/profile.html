@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — Airfinder Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo"><div class="admin-logo-text">✈ Airfinder</div><div class="admin-logo-sub">Staff Portal</div></div>
+  <nav class="admin-nav">
+    <div class="admin-nav-section">Main</div>
+    <a href="/admin/dashboard.html" class="admin-nav-link"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span> Dashboard</a>
+    <a href="/admin/bookings.html" class="admin-nav-link"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg></span> Bookings</a>
+    <a href="/admin/customers.html" class="admin-nav-link"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Customers</a>
+    <div class="admin-nav-section">Management</div>
+    <a href="/admin/staff.html" class="admin-nav-link" data-role-only="super_admin,admin"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Staff</a>
+    <a href="/admin/finance.html" class="admin-nav-link" data-role-only="super_admin,admin,finance"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/></svg></span> Finance</a>
+    <a href="/admin/settings.html" class="admin-nav-link" data-role-only="super_admin"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Settings</a>
+    <div class="admin-nav-section">Account</div>
+    <a href="/admin/profile.html" class="admin-nav-link active"><span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> My Profile</a>
+  </nav>
+  <div class="admin-sidebar-footer">
+    <div class="admin-user-info"><div class="admin-avatar-sm" id="sidebar-avatar">SA</div><div><div class="admin-user-name" id="sidebar-name">—</div><div class="admin-user-role" id="sidebar-role">—</div></div></div>
+    <button class="admin-logout-btn" data-admin-logout><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</button>
+  </div>
+</aside>
+<div class="admin-main">
+  <div class="admin-topbar"><div class="admin-page-title">My Profile</div></div>
+  <div class="admin-content">
+
+    <div class="card card-body" style="max-width:480px;">
+      <h3 class="mb-1">Account Info</h3>
+      <p class="text-sm text-gray mb-3">Logged in as staff member.</p>
+      <div class="price-line"><span class="text-gray">Name</span><span id="profile-name">—</span></div>
+      <div class="price-line"><span class="text-gray">Email</span><span id="profile-email">—</span></div>
+      <div class="price-line"><span class="text-gray">Role</span><span id="profile-role">—</span></div>
+      <div class="price-line"><span class="text-gray">Last Login</span><span id="profile-last-login">—</span></div>
+    </div>
+
+    <div class="card card-body mt-3" style="max-width:480px;">
+      <h3 class="mb-1">Change Password</h3>
+      <p class="text-sm text-gray mb-3">Enter your current password then choose a new one.</p>
+      <div id="alert"></div>
+      <form id="change-pw-form">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <div class="password-toggle">
+            <input class="form-control" id="current_password" type="password" required placeholder="Your current password">
+            <button type="button" class="toggle-btn" onclick="togglePw('current_password')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <div class="password-toggle">
+            <input class="form-control" id="new_password" type="password" required placeholder="Min 8 characters">
+            <button type="button" class="toggle-btn" onclick="togglePw('new_password')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+          <div class="strength-bar mt-1"><div class="strength-fill" id="strength-fill" style="width:0;background:var(--red);"></div></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input class="form-control" id="confirm_password" type="password" required placeholder="Repeat new password">
+        </div>
+        <button class="btn btn-primary btn-full mt-2" type="submit" id="submit-btn">Update Password</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!Auth.requireStaff()) return;
+  try {
+    const staff = await api.get('/staff/auth/me');
+    document.getElementById('profile-name').textContent = `${staff.first_name} ${staff.last_name}`;
+    document.getElementById('profile-email').textContent = staff.email;
+    document.getElementById('profile-role').textContent = staff.role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+    document.getElementById('profile-last-login').textContent = staff.last_login ? Admin.formatDate(staff.last_login) : 'First login';
+  } catch {}
+
+  document.getElementById('new_password').addEventListener('input', function() {
+    const v = this.value;
+    const score = [v.length >= 8, /[A-Z]/.test(v), /[0-9]/.test(v), /[^A-Za-z0-9]/.test(v)].filter(Boolean).length;
+    const colors = ['var(--red)', 'var(--red)', 'var(--amber)', 'var(--green-light)', 'var(--green)'];
+    document.getElementById('strength-fill').style.width = `${score * 25}%`;
+    document.getElementById('strength-fill').style.background = colors[score];
+  });
+
+  document.getElementById('change-pw-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const np = document.getElementById('new_password').value;
+    const cp = document.getElementById('confirm_password').value;
+    if (np !== cp) { showAlert('Passwords do not match.', 'error'); return; }
+    if (np.length < 8) { showAlert('Password must be at least 8 characters.', 'error'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      const data = await api.post('/staff/auth/change-password', {
+        current_password: document.getElementById('current_password').value,
+        new_password: np,
+      });
+      Auth.saveStaff(data.token, data.staff);
+      showAlert('Password updated successfully!', 'success');
+      document.getElementById('change-pw-form').reset();
+      document.getElementById('strength-fill').style.width = '0';
+    } catch (err) {
+      showAlert(err.message || 'Failed to update password.', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Update Password';
+    }
+  });
+});
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function showAlert(msg, type = 'error') {
+  document.getElementById('alert').innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { document.getElementById('alert').innerHTML = ''; }, 4000);
+}
+</script>
+</body>
+</html>
