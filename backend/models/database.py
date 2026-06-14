@@ -22,6 +22,13 @@ def _migrate_existing(app):
         additions.append('ALTER TABLE bookings ADD COLUMN group_reference VARCHAR(20)')
     if 'is_multicity' not in existing:
         additions.append('ALTER TABLE bookings ADD COLUMN is_multicity BOOLEAN DEFAULT 0')
+    # staff reset token columns
+    if 'staff' in inspector.get_table_names():
+        staff_cols = {c['name'] for c in inspector.get_columns('staff')}
+        if 'reset_token' not in staff_cols:
+            additions.append('ALTER TABLE staff ADD COLUMN reset_token VARCHAR(64)')
+        if 'reset_token_expires' not in staff_cols:
+            additions.append('ALTER TABLE staff ADD COLUMN reset_token_expires DATETIME')
     if additions:
         with db.engine.connect() as conn:
             for stmt in additions:

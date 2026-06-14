@@ -6,7 +6,8 @@ from flask import Blueprint, request, jsonify, current_app, g
 from backend.models.database import db
 from backend.models.staff import Staff, StaffRole
 from backend.middleware.jwt_guard import staff_required
-from backend.extensions import limiter
+from backend.extensions import limiter, mail
+from flask_mail import Message
 
 bp = Blueprint('auth_staff', __name__, url_prefix='/api/staff/auth')
 
@@ -94,6 +95,69 @@ def _generate_staff_token(staff: Staff) -> str:
         'exp': datetime.utcnow() + timedelta(hours=12),
     }
     return jwt.encode(payload, current_app.config['JWT_SECRET'], algorithm='HS256')
+
+@bp.route('/forgot-password', methods=['POST'])
+@limiter.limit("5 per minute")
+def forgot_password():
+    data = request.get_json()
+    email = (data.get('email') or '').lower().strip()
+    if not email:
+        return jsonify({'error': 'Email required'}), 400
+
+    staff = Staff.query.filter_by(email=email).first()
+    # Always return success to avoid email enumeration
+    if not staff:
+        return jsonify({'message': 'If that email exists, a reset link has been sent.'}), 200
+
+    token = secrets.token_urlsafe(32)
+    staff.reset_token = token
+    staff.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+    db.session.commit()
+
+    reset_url = f"{request.host_url}admin/reset-password.html?token={token}"
+
+    # Try to send email; fall back to returning the link directly (dev/no-mail mode)
+    try:
+        msg = Message(
+            subject='Airfinder Staff — Password Reset',
+            recipients=[staff.email],
+            body=f"Click the link below to reset your password (valid 1 hour):\n\n{reset_url}\n\nIf you did not request this, ignore this email."
+        )
+        mail.send(msg)
+        return jsonify({'message': 'If that email exists, a reset link has been sent.'}), 200
+    except Exception:
+        # Mail not configured — return link so staff can still reset
+        return jsonify({
+            'message': 'Mail not configured. Use this link to reset your password:',
+            'reset_url': reset_url,
+        }), 200
+
+
+@bp.route('/reset-password', methods=['POST'])
+@limiter.limit("10 per minute")
+def reset_password():
+    data = request.get_json()
+    token = (data.get('token') or '').strip()
+    new_password = data.get('new_password') or ''
+
+    if not token or not new_password:
+        return jsonify({'error': 'Token and new_password required'}), 400
+    if len(new_password) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+    staff = Staff.query.filter_by(reset_token=token).first()
+    if not staff or not staff.reset_token_expires or staff.reset_token_expires < datetime.utcnow():
+        return jsonify({'error': 'Reset link is invalid or has expired'}), 400
+
+    hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+    staff.password_hash = hashed.decode('utf-8')
+    staff.must_change_password = False
+    staff.reset_token = None
+    staff.reset_token_expires = None
+    db.session.commit()
+
+    return jsonify({'message': 'Password reset successfully. You can now log in.'}), 200
+
 
 def _extract_token():
     auth = request.headers.get('Authorization', '')

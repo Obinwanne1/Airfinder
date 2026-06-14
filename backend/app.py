@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 from backend.config import Config
 from backend.models.database import init_db
-from backend.extensions import limiter
+from backend.extensions import limiter, mail
 
 def create_app():
     app = Flask(__name__, static_folder='../frontend', static_url_path='')
@@ -11,6 +11,7 @@ def create_app():
 
     CORS(app, resources={r'/api/*': {'origins': '*'}})
     limiter.init_app(app)
+    mail.init_app(app)
 
     init_db(app)
 
