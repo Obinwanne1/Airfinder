@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: airfinder
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "backend.app:create_app()"
+    envVars:
+      - key: PYTHONPATH
+        value: .
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: 0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: airfinder-db
+          property: connectionString
+      - key: DEFAULT_MARKUP_PERCENT
+        value: 8
+      - key: DEFAULT_SERVICE_FEE_USD
+        value: 15
+      - key: DEFAULT_COMMISSION_PERCENT
+        value: 3
+
+databases:
+  - name: airfinder-db
+    plan: free

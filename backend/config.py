@@ -6,7 +6,7 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     JWT_SECRET = os.getenv('JWT_SECRET', 'dev-jwt-secret')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///airfinder.db')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///airfinder.db').replace('postgres://', 'postgresql://', 1)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
