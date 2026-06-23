@@ -4,63 +4,87 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 
 AIRLINES = [
-    # African carriers
-    {'name': 'Air Peace', 'code': 'P4', 'region': 'africa', 'trust_score': 4.1},
-    {'name': 'Ethiopian Airlines', 'code': 'ET', 'region': 'africa', 'trust_score': 4.7},
-    {'name': 'Kenya Airways', 'code': 'KQ', 'region': 'africa', 'trust_score': 4.3},
-    {'name': 'RwandAir', 'code': 'WB', 'region': 'africa', 'trust_score': 4.5},
-    {'name': 'Arik Air', 'code': 'W3', 'region': 'africa', 'trust_score': 3.8},
-    {'name': 'IbomAir', 'code': 'Z9', 'region': 'africa', 'trust_score': 4.0},
-    {'name': 'South African Airways', 'code': 'SA', 'region': 'africa', 'trust_score': 4.2},
-    {'name': 'EgyptAir', 'code': 'MS', 'region': 'africa', 'trust_score': 4.1},
-    {'name': 'Royal Air Maroc', 'code': 'AT', 'region': 'africa', 'trust_score': 4.0},
-    {'name': 'Tunisair', 'code': 'TU', 'region': 'africa', 'trust_score': 3.7},
-    {'name': 'Air Côte d\'Ivoire', 'code': 'HF', 'region': 'africa', 'trust_score': 3.9},
-    {'name': 'ASKY Airlines', 'code': 'KP', 'region': 'africa', 'trust_score': 3.8},
-    # Middle Eastern carriers
-    {'name': 'Emirates', 'code': 'EK', 'region': 'middle_east', 'trust_score': 4.9},
-    {'name': 'Qatar Airways', 'code': 'QR', 'region': 'middle_east', 'trust_score': 4.8},
-    {'name': 'Etihad Airways', 'code': 'EY', 'region': 'middle_east', 'trust_score': 4.7},
-    {'name': 'Turkish Airlines', 'code': 'TK', 'region': 'middle_east', 'trust_score': 4.5},
-    {'name': 'flydubai', 'code': 'FZ', 'region': 'middle_east', 'trust_score': 4.2},
+    # African carriers — operate within Africa and to/from Africa
+    {'name': 'Air Peace', 'code': 'P4', 'region': 'africa', 'longhaul': False, 'trust_score': 4.1},
+    {'name': 'Ethiopian Airlines', 'code': 'ET', 'region': 'africa', 'longhaul': True, 'trust_score': 4.7},
+    {'name': 'Kenya Airways', 'code': 'KQ', 'region': 'africa', 'longhaul': True, 'trust_score': 4.3},
+    {'name': 'RwandAir', 'code': 'WB', 'region': 'africa', 'longhaul': True, 'trust_score': 4.5},
+    {'name': 'Arik Air', 'code': 'W3', 'region': 'africa', 'longhaul': False, 'trust_score': 3.8},
+    {'name': 'IbomAir', 'code': 'Z9', 'region': 'africa', 'longhaul': False, 'trust_score': 4.0},
+    {'name': 'South African Airways', 'code': 'SA', 'region': 'africa', 'longhaul': True, 'trust_score': 4.2},
+    {'name': 'EgyptAir', 'code': 'MS', 'region': 'africa', 'longhaul': True, 'trust_score': 4.1},
+    {'name': 'Royal Air Maroc', 'code': 'AT', 'region': 'africa', 'longhaul': True, 'trust_score': 4.0},
+    {'name': 'Tunisair', 'code': 'TU', 'region': 'africa', 'longhaul': False, 'trust_score': 3.7},
+    {'name': 'Air Côte d\'Ivoire', 'code': 'HF', 'region': 'africa', 'longhaul': False, 'trust_score': 3.9},
+    {'name': 'ASKY Airlines', 'code': 'KP', 'region': 'africa', 'longhaul': False, 'trust_score': 3.8},
+    # Middle Eastern carriers — fly globally, always eligible for any international route
+    {'name': 'Emirates', 'code': 'EK', 'region': 'middle_east', 'longhaul': True, 'trust_score': 4.9},
+    {'name': 'Qatar Airways', 'code': 'QR', 'region': 'middle_east', 'longhaul': True, 'trust_score': 4.8},
+    {'name': 'Etihad Airways', 'code': 'EY', 'region': 'middle_east', 'longhaul': True, 'trust_score': 4.7},
+    {'name': 'Turkish Airlines', 'code': 'TK', 'region': 'middle_east', 'longhaul': True, 'trust_score': 4.5},
+    {'name': 'flydubai', 'code': 'FZ', 'region': 'middle_east', 'longhaul': False, 'trust_score': 4.2},
     # European carriers
-    {'name': 'Lufthansa', 'code': 'LH', 'region': 'europe', 'trust_score': 4.6},
-    {'name': 'Eurowings', 'code': 'EW', 'region': 'europe', 'trust_score': 4.0},
-    {'name': 'British Airways', 'code': 'BA', 'region': 'europe', 'trust_score': 4.6},
-    {'name': 'Air France', 'code': 'AF', 'region': 'europe', 'trust_score': 4.4},
-    {'name': 'KLM', 'code': 'KL', 'region': 'europe', 'trust_score': 4.5},
-    {'name': 'Swiss International', 'code': 'LX', 'region': 'europe', 'trust_score': 4.6},
-    {'name': 'Austrian Airlines', 'code': 'OS', 'region': 'europe', 'trust_score': 4.4},
-    {'name': 'SAS', 'code': 'SK', 'region': 'europe', 'trust_score': 4.3},
-    {'name': 'Finnair', 'code': 'AY', 'region': 'europe', 'trust_score': 4.4},
-    {'name': 'TAP Air Portugal', 'code': 'TP', 'region': 'europe', 'trust_score': 4.1},
-    {'name': 'Iberia', 'code': 'IB', 'region': 'europe', 'trust_score': 4.3},
-    {'name': 'Alitalia/ITA Airways', 'code': 'AZ', 'region': 'europe', 'trust_score': 3.9},
-    {'name': 'Ryanair', 'code': 'FR', 'region': 'europe', 'trust_score': 3.8},
-    {'name': 'EasyJet', 'code': 'U2', 'region': 'europe', 'trust_score': 3.9},
-    {'name': 'Wizz Air', 'code': 'W6', 'region': 'europe', 'trust_score': 3.7},
-    {'name': 'LOT Polish Airlines', 'code': 'LO', 'region': 'europe', 'trust_score': 4.2},
+    {'name': 'Lufthansa', 'code': 'LH', 'region': 'europe', 'longhaul': True, 'trust_score': 4.6},
+    {'name': 'Eurowings', 'code': 'EW', 'region': 'europe', 'longhaul': False, 'trust_score': 4.0},
+    {'name': 'British Airways', 'code': 'BA', 'region': 'europe', 'longhaul': True, 'trust_score': 4.6},
+    {'name': 'Air France', 'code': 'AF', 'region': 'europe', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'KLM', 'code': 'KL', 'region': 'europe', 'longhaul': True, 'trust_score': 4.5},
+    {'name': 'Swiss International', 'code': 'LX', 'region': 'europe', 'longhaul': True, 'trust_score': 4.6},
+    {'name': 'Austrian Airlines', 'code': 'OS', 'region': 'europe', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'SAS', 'code': 'SK', 'region': 'europe', 'longhaul': True, 'trust_score': 4.3},
+    {'name': 'Finnair', 'code': 'AY', 'region': 'europe', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'TAP Air Portugal', 'code': 'TP', 'region': 'europe', 'longhaul': True, 'trust_score': 4.1},
+    {'name': 'Iberia', 'code': 'IB', 'region': 'europe', 'longhaul': True, 'trust_score': 4.3},
+    {'name': 'ITA Airways', 'code': 'AZ', 'region': 'europe', 'longhaul': True, 'trust_score': 3.9},
+    {'name': 'Ryanair', 'code': 'FR', 'region': 'europe', 'longhaul': False, 'trust_score': 3.8},
+    {'name': 'EasyJet', 'code': 'U2', 'region': 'europe', 'longhaul': False, 'trust_score': 3.9},
+    {'name': 'Wizz Air', 'code': 'W6', 'region': 'europe', 'longhaul': False, 'trust_score': 3.7},
+    {'name': 'LOT Polish Airlines', 'code': 'LO', 'region': 'europe', 'longhaul': True, 'trust_score': 4.2},
     # Asian carriers
-    {'name': 'Singapore Airlines', 'code': 'SQ', 'region': 'asia', 'trust_score': 4.9},
-    {'name': 'Cathay Pacific', 'code': 'CX', 'region': 'asia', 'trust_score': 4.8},
-    {'name': 'Japan Airlines', 'code': 'JL', 'region': 'asia', 'trust_score': 4.8},
-    {'name': 'ANA', 'code': 'NH', 'region': 'asia', 'trust_score': 4.8},
-    {'name': 'Korean Air', 'code': 'KE', 'region': 'asia', 'trust_score': 4.6},
-    {'name': 'Air India', 'code': 'AI', 'region': 'asia', 'trust_score': 3.9},
-    {'name': 'IndiGo', 'code': '6E', 'region': 'asia', 'trust_score': 4.0},
-    {'name': 'Malaysia Airlines', 'code': 'MH', 'region': 'asia', 'trust_score': 4.4},
-    {'name': 'Thai Airways', 'code': 'TG', 'region': 'asia', 'trust_score': 4.3},
-    {'name': 'Garuda Indonesia', 'code': 'GA', 'region': 'asia', 'trust_score': 4.2},
+    {'name': 'Singapore Airlines', 'code': 'SQ', 'region': 'asia', 'longhaul': True, 'trust_score': 4.9},
+    {'name': 'Cathay Pacific', 'code': 'CX', 'region': 'asia', 'longhaul': True, 'trust_score': 4.8},
+    {'name': 'Japan Airlines', 'code': 'JL', 'region': 'asia', 'longhaul': True, 'trust_score': 4.8},
+    {'name': 'ANA', 'code': 'NH', 'region': 'asia', 'longhaul': True, 'trust_score': 4.8},
+    {'name': 'Korean Air', 'code': 'KE', 'region': 'asia', 'longhaul': True, 'trust_score': 4.6},
+    {'name': 'Air India', 'code': 'AI', 'region': 'asia', 'longhaul': True, 'trust_score': 3.9},
+    {'name': 'IndiGo', 'code': '6E', 'region': 'asia', 'longhaul': False, 'trust_score': 4.0},
+    {'name': 'Malaysia Airlines', 'code': 'MH', 'region': 'asia', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'Thai Airways', 'code': 'TG', 'region': 'asia', 'longhaul': True, 'trust_score': 4.3},
+    {'name': 'Garuda Indonesia', 'code': 'GA', 'region': 'asia', 'longhaul': True, 'trust_score': 4.2},
     # Americas carriers
-    {'name': 'Delta Air Lines', 'code': 'DL', 'region': 'americas', 'trust_score': 4.5},
-    {'name': 'United Airlines', 'code': 'UA', 'region': 'americas', 'trust_score': 4.4},
-    {'name': 'American Airlines', 'code': 'AA', 'region': 'americas', 'trust_score': 4.3},
-    {'name': 'Air Canada', 'code': 'AC', 'region': 'americas', 'trust_score': 4.4},
-    {'name': 'LATAM Airlines', 'code': 'LA', 'region': 'americas', 'trust_score': 4.2},
+    {'name': 'Delta Air Lines', 'code': 'DL', 'region': 'americas', 'longhaul': True, 'trust_score': 4.5},
+    {'name': 'United Airlines', 'code': 'UA', 'region': 'americas', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'American Airlines', 'code': 'AA', 'region': 'americas', 'longhaul': True, 'trust_score': 4.3},
+    {'name': 'Air Canada', 'code': 'AC', 'region': 'americas', 'longhaul': True, 'trust_score': 4.4},
+    {'name': 'LATAM Airlines', 'code': 'LA', 'region': 'americas', 'longhaul': True, 'trust_score': 4.2},
     # Oceania carriers
-    {'name': 'Qantas', 'code': 'QF', 'region': 'oceania', 'trust_score': 4.7},
-    {'name': 'Air New Zealand', 'code': 'NZ', 'region': 'oceania', 'trust_score': 4.7},
+    {'name': 'Qantas', 'code': 'QF', 'region': 'oceania', 'longhaul': True, 'trust_score': 4.7},
+    {'name': 'Air New Zealand', 'code': 'NZ', 'region': 'oceania', 'longhaul': True, 'trust_score': 4.7},
 ]
+
+def _eligible_airlines(origin_region, dest_region):
+    """Return airlines that plausibly operate a route between these two regions."""
+    same_region = origin_region == dest_region
+    eligible = []
+    for a in AIRLINES:
+        r = a['region']
+        if same_region:
+            # Short/medium-haul intra-region: any airline from that region
+            if r == origin_region:
+                eligible.append(a)
+        else:
+            # Cross-region: airlines from either endpoint region (if longhaul capable)
+            # plus all Middle Eastern carriers (universal connectors)
+            if r == 'middle_east':
+                eligible.append(a)
+            elif r in (origin_region, dest_region) and a['longhaul']:
+                eligible.append(a)
+    # Fallback: if pool too small, add any longhaul airline
+    if len(eligible) < 4:
+        for a in AIRLINES:
+            if a['longhaul'] and a not in eligible:
+                eligible.append(a)
+    return eligible
 
 AIRPORTS = {
     # ── Nigeria ──
@@ -856,9 +880,12 @@ def search_flights(origin, destination, departure_date, passengers=1, cabin='eco
 
     results = []
 
-    # Generate 3-6 flight options
+    # Generate 3-6 flight options using only plausible airlines for this route
+    o_region = AIRPORTS.get(origin, {}).get('region', '')
+    d_region = AIRPORTS.get(destination, {}).get('region', '')
+    pool = _eligible_airlines(o_region, d_region)
     num_results = random.randint(3, 6)
-    used_airlines = random.sample(AIRLINES, min(num_results, len(AIRLINES)))
+    used_airlines = random.sample(pool, min(num_results, len(pool)))
 
     for i, airline in enumerate(used_airlines):
         base = round(random.uniform(price_range[0], price_range[1]) * cabin_mult, 2)
