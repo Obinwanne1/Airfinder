@@ -174,3 +174,124 @@ def pricing_options():
         'baggage': [{'id': k, 'label': k.replace('_', ' ').title(), 'fee_usd': v} for k, v in BAGGAGE_FEES.items()],
         'seats': [{'id': k, 'label': k.replace('_', ' ').title(), 'fee_usd': v} for k, v in SEAT_FEES.items()],
     })
+
+@bp.route('/status', methods=['GET'])
+@limiter.limit("60 per minute")
+def flight_status():
+    from backend.services.mock_flights import AIRPORTS, AIRLINES
+    import random, hashlib
+
+    flight_number = request.args.get('flight', '').upper().strip()
+    date_str = request.args.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
+
+    if not flight_number:
+        return jsonify({'error': 'flight number required'}), 400
+
+    # Derive deterministic but realistic mock data from flight number + date
+    seed = int(hashlib.md5(f"{flight_number}{date_str}".encode()).hexdigest(), 16) % (2**31)
+    rng = random.Random(seed)
+
+    # Identify airline from code prefix
+    airline = None
+    for a in AIRLINES:
+        if flight_number.startswith(a['code']):
+            airline = a
+            break
+    if not airline:
+        airline = rng.choice(AIRLINES)
+
+    # Pick plausible origin/destination from airport pool
+    airport_list = [{'code': k, **v} for k, v in AIRPORTS.items()]
+    origin_ap = rng.choice(airport_list)
+    dest_pool = [a for a in airport_list if a['code'] != origin_ap['code'] and a['region'] != origin_ap['region']]
+    if not dest_pool:
+        dest_pool = [a for a in airport_list if a['code'] != origin_ap['code']]
+    dest_ap = rng.choice(dest_pool)
+
+    # Scheduled times
+    sched_dep_h = rng.randint(5, 22)
+    sched_dep_m = rng.choice([0, 15, 30, 45])
+
+    from backend.services.mock_flights import _haversine_km, _estimate_duration
+    dist = _haversine_km(origin_ap['lat'], origin_ap['lon'], dest_ap['lat'], dest_ap['lon'])
+    duration_h = _estimate_duration(origin_ap['code'], dest_ap['code'], 0)
+    arr_h = int((sched_dep_h + duration_h) % 24)
+    arr_m = sched_dep_m
+    next_day = (sched_dep_h + duration_h) >= 24
+
+    # Current status based on time-of-day simulation
+    now = datetime.utcnow()
+    status_roll = rng.randint(0, 99)
+    if status_roll < 5:
+        status = 'cancelled'
+        delay_min = 0
+        status_color = 'red'
+    elif status_roll < 20:
+        delay_min = rng.choice([15, 20, 30, 45, 60, 90, 120])
+        status = 'delayed'
+        status_color = 'amber'
+    elif status_roll < 35:
+        status = 'boarding'
+        delay_min = 0
+        status_color = 'blue'
+    elif status_roll < 55:
+        status = 'departed'
+        delay_min = 0
+        status_color = 'green'
+    elif status_roll < 75:
+        status = 'arrived'
+        delay_min = 0
+        status_color = 'green'
+    else:
+        status = 'on_time'
+        delay_min = 0
+        status_color = 'green'
+
+    gate = f"{rng.choice('ABCDEFGH')}{rng.randint(1,30)}"
+    terminal = f"T{rng.randint(1,3)}"
+
+    actual_dep_h = int((sched_dep_h * 60 + sched_dep_m + delay_min) / 60) % 24
+    actual_dep_m = (sched_dep_m + delay_min) % 60
+
+    status_labels = {
+        'on_time': 'On Time',
+        'delayed': f'Delayed {delay_min} min',
+        'boarding': 'Boarding',
+        'departed': 'Departed',
+        'arrived': 'Arrived',
+        'cancelled': 'Cancelled',
+    }
+
+    return jsonify({
+        'flight_number': flight_number,
+        'date': date_str,
+        'airline': airline['name'],
+        'airline_code': airline['code'],
+        'origin': {
+            'code': origin_ap['code'],
+            'name': origin_ap['name'],
+            'city': origin_ap['city'],
+            'country': origin_ap['country'],
+        },
+        'destination': {
+            'code': dest_ap['code'],
+            'name': dest_ap['name'],
+            'city': dest_ap['city'],
+            'country': dest_ap['country'],
+        },
+        'scheduled_departure': f"{sched_dep_h:02d}:{sched_dep_m:02d}",
+        'scheduled_arrival': f"{arr_h:02d}:{arr_m:02d}",
+        'actual_departure': f"{actual_dep_h:02d}:{actual_dep_m:02d}" if status not in ('on_time', 'cancelled') else f"{sched_dep_h:02d}:{sched_dep_m:02d}",
+        'estimated_arrival': f"{int((arr_h * 60 + arr_m + delay_min) / 60) % 24:02d}:{(arr_m + delay_min) % 60:02d}",
+        'status': status,
+        'status_label': status_labels[status],
+        'status_color': status_color,
+        'delay_minutes': delay_min,
+        'gate': gate,
+        'terminal': terminal,
+        'duration_hours': round(duration_h, 1),
+        'distance_km': round(dist),
+        'next_day_arrival': next_day,
+        'aircraft': rng.choice(['Boeing 737-800', 'Airbus A320', 'Boeing 787-9', 'Airbus A350-900', 'Boeing 777-300ER', 'Airbus A380', 'Embraer E195', 'Airbus A321neo']),
+        'baggage_belt': rng.randint(1, 12) if status == 'arrived' else None,
+    })

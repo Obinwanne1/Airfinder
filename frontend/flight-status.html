@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flight Status — Airfinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.status-hero {
+  background: linear-gradient(135deg, #1a2e1a 0%, #2d5c29 60%, #407E3C 100%);
+  padding: 48px 0 64px;
+  color: white;
+}
+.status-hero h1 { color: white; margin-bottom: 8px; }
+.status-hero p { opacity: .8; font-size: 15px; margin-bottom: 28px; }
+
+.search-bar {
+  display: flex;
+  gap: 12px;
+  max-width: 600px;
+}
+.search-bar input {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 15px;
+  font-family: var(--font);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.search-bar input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--gray-400); }
+.search-bar input:focus { outline: 2px solid rgba(255,255,255,.4); }
+.search-bar .date-input { text-transform: none; letter-spacing: 0; font-weight: 400; max-width: 170px; }
+
+.result-area { padding: 36px 0 60px; }
+
+/* Status badge */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.status-green  { background: #dcfce7; color: #166534; }
+.status-amber  { background: #fef3c7; color: #92400e; }
+.status-red    { background: #fee2e2; color: #991b1b; }
+.status-blue   { background: #dbeafe; color: #1e40af; }
+
+/* Flight header card */
+.flight-header-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(0,0,0,.08), 0 8px 32px rgba(0,0,0,.06);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.flight-header-top {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.flight-num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -.4px;
+}
+.airline-info { color: rgba(255,255,255,.85); font-size: 13px; margin-top: 2px; }
+
+.flight-route {
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.route-airport { }
+.route-code { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; color: var(--gray-800); }
+.route-city { font-size: 13px; color: var(--gray-600); margin-top: 2px; }
+.route-airport-name { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+.route-times { margin-top: 8px; }
+.route-sched { font-size: 1.3rem; font-weight: 700; color: var(--gray-800); letter-spacing: -.4px; }
+.route-actual { font-size: 12px; color: var(--gray-600); margin-top: 2px; }
+.route-actual.delayed { color: #d97706; font-weight: 600; }
+
+.flight-line-wrap {
+  text-align: center;
+  padding: 0 12px;
+}
+.flight-line-svg { color: var(--gray-300); margin-bottom: 4px; }
+.duration-label { font-size: 11px; color: var(--gray-500); font-weight: 500; }
+.nonstop-label { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 2px; }
+
+.route-dest { text-align: right; }
+
+/* Info grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--gray-200);
+}
+.info-cell {
+  padding: 18px 24px;
+  border-right: 1px solid var(--gray-200);
+}
+.info-cell:last-child { border-right: none; }
+.info-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-400); margin-bottom: 5px; }
+.info-value { font-size: 15px; font-weight: 600; color: var(--gray-800); }
+.info-value.highlight { color: var(--green); }
+
+/* Progress bar */
+.progress-card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+  border: 1px solid var(--gray-200);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.progress-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--gray-400); margin-bottom: 16px; }
+.progress-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+.step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--gray-200);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-400);
+  position: relative;
+  z-index: 1;
+}
+.step-dot.done { background: var(--green); border-color: var(--green); color: white; }
+.step-dot.active { background: var(--green-pale); border-color: var(--green); color: var(--green); }
+.step-label { font-size: 11px; font-weight: 600; color: var(--gray-400); margin-top: 6px; text-align: center; }
+.step-label.done { color: var(--green); }
+.step-label.active { color: var(--green-dark); font-weight: 700; }
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--gray-200);
+  margin-top: -14px;
+}
+.step-line.done { background: var(--green); }
+
+/* Disclaimer */
+.mock-notice {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #92400e;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .search-bar { flex-direction: column; }
+  .search-bar .date-input { max-width: 100%; }
+  .info-grid { grid-template-columns: 1fr 1fr; }
+  .info-cell:nth-child(2) { border-right: none; }
+  .info-cell:nth-child(3) { border-top: 1px solid var(--gray-200); }
+  .flight-route { grid-template-columns: 1fr; gap: 20px; }
+  .route-dest { text-align: left; }
+  .flight-line-wrap { transform: rotate(90deg); margin: 8px 0; }
+}
+@media (max-width: 480px) {
+  .info-grid { grid-template-columns: 1fr; }
+  .info-cell { border-right: none !important; border-top: 1px solid var(--gray-200); }
+  .info-cell:first-child { border-top: none; }
+  .flight-header-top { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand">✈ Airfinder</a>
+    <div class="navbar-links" id="navLinks">
+      <a href="/" class="navbar-link">Search Flights</a>
+      <a href="/flight-status.html" class="navbar-link" style="color:var(--green);font-weight:600;">Flight Status</a>
+      <a href="/auth/login.html" class="navbar-link" data-auth-login>Login</a>
+      <a href="/account/dashboard.html" class="navbar-link hidden" data-auth-logout>My Trips</a>
+      <a href="/account/profile.html" class="navbar-link hidden" data-auth-logout>My Profile</a>
+      <a href="#" class="navbar-link hidden" data-auth-logout id="logoutBtn">Logout</a>
+    </div>
+    <button class="navbar-menu" id="menuBtn" aria-label="Menu">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="12" x2="19" y2="12"/><line x1="3" y1="18" x2="19" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Hero / search -->
+<div class="status-hero">
+  <div class="container">
+    <h1>Flight Status</h1>
+    <p>Track any flight in real time — check gate, delays, and live progress.</p>
+    <div class="search-bar">
+      <input type="text" id="flightInput" placeholder="e.g. LH401, EK204, BA123" maxlength="10" autocomplete="off">
+      <input type="date" id="dateInput" class="date-input" style="color:#1f2937;">
+      <button class="btn btn-primary" onclick="lookupFlight()">Check Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- Results -->
+<div class="result-area">
+  <div class="container">
+    <div id="statusResult"></div>
+
+    <!-- Popular examples -->
+    <div id="examplesBlock">
+      <p class="text-gray text-sm mb-2">Try an example:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('LH401')">LH401 Lufthansa</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('EK204')">EK204 Emirates</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('BA023')">BA023 British Airways</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('QR007')">QR007 Qatar Airways</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('AF447')">AF447 Air France</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('TK1')">TK1 Turkish Airlines</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('DL401')">DL401 Delta</button>
+        <button class="btn btn-secondary btn-sm" onclick="fillExample('SQ322')">SQ322 Singapore Airlines</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div style="text-align:center;padding:20px 0;">
+      <div class="footer-brand">✈ Airfinder</div>
+      <p style="font-size:13px;margin-top:8px;">Smart flight search for modern travellers.</p>
+    </div>
+    <div class="footer-bottom">© 2025 Airfinder. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="/js/locale.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+// Set default date to today
+document.getElementById('dateInput').value = new Date().toISOString().slice(0, 10);
+
+// Read query params on load
+const params = new URLSearchParams(location.search);
+if (params.get('flight')) {
+  document.getElementById('flightInput').value = params.get('flight').toUpperCase();
+  if (params.get('date')) document.getElementById('dateInput').value = params.get('date');
+  lookupFlight();
+}
+
+document.getElementById('flightInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookupFlight();
+});
+
+function fillExample(code) {
+  document.getElementById('flightInput').value = code;
+  lookupFlight();
+}
+
+async function lookupFlight() {
+  const fn = document.getElementById('flightInput').value.trim().toUpperCase();
+  const date = document.getElementById('dateInput').value;
+  if (!fn) { document.getElementById('flightInput').focus(); return; }
+
+  document.getElementById('examplesBlock').style.display = 'none';
+  document.getElementById('statusResult').innerHTML = `
+    <div style="text-align:center;padding:60px 0;">
+      <div class="spinner"></div>
+      <p class="text-gray mt-2">Looking up ${fn}...</p>
+    </div>`;
+
+  try {
+    const data = await api.get(`/flights/status?flight=${encodeURIComponent(fn)}&date=${date}`);
+    renderStatus(data);
+  } catch (e) {
+    document.getElementById('statusResult').innerHTML = `
+      <div class="alert alert-error">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ${e.message || 'Could not retrieve flight status. Please try again.'}
+      </div>`;
+    document.getElementById('examplesBlock').style.display = '';
+  }
+}
+
+function renderStatus(f) {
+  const statusClass = { green: 'status-green', amber: 'status-amber', red: 'status-red', blue: 'status-blue' }[f.status_color] || 'status-green';
+  const statusIcon = { on_time: '✓', delayed: '⚠', boarding: '🚪', departed: '✈', arrived: '✓', cancelled: '✕' }[f.status] || '•';
+
+  // Determine step states
+  const steps = ['Scheduled', 'Boarding', 'Departed', 'Arrived'];
+  const stepState = { on_time: 0, delayed: 0, boarding: 1, departed: 2, arrived: 3, cancelled: -1 }[f.status];
+
+  const stepHTML = steps.map((label, i) => {
+    const isDone = stepState > i;
+    const isActive = stepState === i;
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    const lineCls = isDone ? 'done' : '';
+    const dot = isDone ? '✓' : (i + 1);
+    const lineEl = i < steps.length - 1 ? `<div class="step-line ${lineCls}"></div>` : '';
+    return `<div class="step"><div class="step-dot ${cls}">${dot}</div><div class="step-label ${cls}">${label}</div></div>${lineEl}`;
+  }).join('');
+
+  const cancelledBanner = f.status === 'cancelled' ? `
+    <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">✕</span>
+      <div>
+        <div style="font-weight:700;color:#991b1b;">Flight Cancelled</div>
+        <div style="font-size:13px;color:#b91c1c;margin-top:2px;">Please contact your airline or check your booking for rebooking options.</div>
+      </div>
+    </div>` : '';
+
+  const depActualClass = f.delay_minutes > 0 ? 'delayed' : '';
+  const nextDayNote = f.next_day_arrival ? ' <span style="font-size:11px;color:var(--amber);font-weight:600;">+1</span>' : '';
+
+  document.getElementById('statusResult').innerHTML = `
+    <div class="mock-notice">
+      ⚠ Flight status shown is simulated demo data — not a live feed.
+    </div>
+
+    ${cancelledBanner}
+
+    <div class="flight-header-card">
+      <div class="flight-header-top">
+        <div>
+          <div class="flight-num">${f.flight_number}</div>
+          <div class="airline-info">${f.airline} · ${f.aircraft}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="status-pill ${statusClass}">${statusIcon} ${f.status_label}</span>
+          <div style="text-align:right;color:rgba(255,255,255,.7);font-size:12px;">${f.date}</div>
+        </div>
+      </div>
+
+      <div class="flight-route">
+        <div class="route-airport">
+          <div class="route-code">${f.origin.code}</div>
+          <div class="route-city">${f.origin.city}, ${f.origin.country}</div>
+          <div class="route-airport-name">${f.origin.name}</div>
+          <div class="route-times">
+            <div class="route-sched">${f.scheduled_departure}</div>
+            ${f.delay_minutes > 0 ? `<div class="route-actual ${depActualClass}">Actual: ${f.actual_departure}</div>` : ''}
+            ${f.status === 'on_time' ? '<div class="route-actual" style="color:var(--green);">On Time</div>' : ''}
+          </div>
+        </div>
+
+        <div class="flight-line-wrap">
+          <svg width="160" height="24" viewBox="0 0 160 24" fill="none" class="flight-line-svg" style="display:block;margin:0 auto;">
+            <line x1="0" y1="12" x2="68" y2="12" stroke="#e5e7eb" stroke-width="2"/>
+            <text x="80" y="17" text-anchor="middle" font-size="18" fill="#407E3C">✈</text>
+            <line x1="92" y1="12" x2="160" y2="12" stroke="#e5e7eb" stroke-width="2"/>
+          </svg>
+          <div class="duration-label">${f.duration_hours}h · ${f.distance_km.toLocaleString()} km</div>
+          <div class="nonstop-label">Nonstop</div>
+        </div>
+
+        <div class="route-airport route-dest">
+          <div class="route-code">${f.destination.code}</div>
+          <div class="route-city">${f.destination.city}, ${f.destination.country}</div>
+          <div class="route-airport-name">${f.destination.name}</div>
+          <div class="route-times">
+            <div class="route-sched">${f.scheduled_arrival}${nextDayNote}</div>
+            ${f.delay_minutes > 0 ? `<div class="route-actual ${depActualClass}">Est: ${f.estimated_arrival}${nextDayNote}</div>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-label">Terminal</div>
+          <div class="info-value highlight">${f.terminal}</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">Gate</div>
+          <div class="info-value highlight">${f.status === 'cancelled' ? '—' : f.gate}</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">Aircraft</div>
+          <div class="info-value">${f.aircraft}</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">${f.status === 'arrived' ? 'Baggage Belt' : 'Delay'}</div>
+          <div class="info-value ${f.delay_minutes > 0 ? '' : 'highlight'}">
+            ${f.status === 'arrived' && f.baggage_belt ? `Belt ${f.baggage_belt}` : f.delay_minutes > 0 ? `+${f.delay_minutes} min` : f.status === 'cancelled' ? '—' : 'None'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${f.status !== 'cancelled' ? `
+    <div class="progress-card">
+      <div class="progress-title">Flight Progress</div>
+      <div class="progress-steps">${stepHTML}</div>
+    </div>` : ''}
+
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="/" class="btn btn-secondary btn-sm">← Search Flights</a>
+      <button class="btn btn-secondary btn-sm" onclick="lookupFlight()">↻ Refresh</button>
+      <button class="btn btn-secondary btn-sm" onclick="shareStatus()">Share</button>
+    </div>
+  `;
+}
+
+function shareStatus() {
+  const fn = document.getElementById('flightInput').value.trim().toUpperCase();
+  const date = document.getElementById('dateInput').value;
+  const url = `${location.origin}/flight-status.html?flight=${fn}&date=${date}`;
+  if (navigator.share) {
+    navigator.share({ title: `${fn} Status`, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => alert('Link copied!'));
+  }
+}
+
+// Navbar mobile
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('mobile-open');
+});
+document.getElementById('logoutBtn')?.addEventListener('click', e => {
+  e.preventDefault();
+  localStorage.removeItem('af_token');
+  localStorage.removeItem('af_user');
+  location.href = '/';
+});
+</script>
+</body>
+</html>
