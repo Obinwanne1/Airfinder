@@ -107,20 +107,49 @@ python backend/app.py
 - Staff accounts: created by admin, emailed temp password, must change on first login
 
 ## Key APIs
-- POST /api/auth/register
-- POST /api/auth/login
-- POST /api/staff/auth/login
-- POST /api/staff/auth/change-password
-- GET /api/flights/search
-- POST /api/flights/search/ai
-- POST /api/bookings
-- GET /api/admin/dashboard
-- GET /api/admin/staff
-- POST /api/admin/staff
-- GET /api/admin/finance/summary
+- POST /api/auth/register — customer signup
+- POST /api/auth/login — customer login
+- POST /api/staff/auth/login — staff login
+- POST /api/staff/auth/change-password — force change (works even with must_change_password=True)
+- GET /api/flights/search — flight search
+- POST /api/flights/search/ai — NL query search
+- POST /api/flights/search/multicity — multi-leg search
+- POST /api/bookings — create booking (auth required)
+- POST /api/bookings/multicity — multi-city booking (auth required)
+- GET /api/flights/status?flight=XX&date=YYYY-MM-DD — flight status/tracking (deterministic mock)
+- GET /api/admin/dashboard — admin stats
+- GET /api/admin/staff — staff list
+- POST /api/admin/staff — create staff
+- GET /api/admin/finance/summary — revenue data
 
 ## Roles
 super_admin > admin > agent > finance > customer
+
+## Revenue Config (.env)
+DEFAULT_MARKUP_PERCENT=8
+DEFAULT_SERVICE_FEE_USD=15
+DEFAULT_COMMISSION_PERCENT=3
+
+## Frontend Pages
+- / — search homepage
+- /results.html — search results
+- /booking.html — booking flow
+- /confirmation.html — booking confirmed
+- /multicity.html — multi-city results + booking
+- /flight-status.html — flight tracking page
+- /auth/login.html, /auth/register.html, /auth/forgot-password.html
+- /account/dashboard.html, /account/bookings.html, /account/profile.html
+- /admin/* — staff portal
+
+## Airport Database (mock_flights.py)
+191 airports with lat/lon. Germany: FRA MUC DUS BER HAM STR CGN NUE HAJ LEJ DRS BSL FKB.
+Nigeria: LOS ABV PHC KAN ENU. Full coverage: Africa, Middle East, Europe, Americas, Asia, Oceania.
+Haversine-based flight durations. AIRPORT_CARRIERS whitelist restricts airlines per regional airport.
+
+## Airline Routing
+50 airlines, 6 regions, longhaul bool. _eligible_airlines() builds pool per route.
+AIRPORT_CARRIERS whitelist: PHC/KAN/ENU = Nigerian+African carriers only.
+German secondaries (STR/CGN etc) = Lufthansa/Eurowings/LCC only.
 ```
 
 ---
@@ -5701,3 +5730,86 @@ True Cost = base_fare × (1 + markup/100) + service_fee + baggage_fee + seat_fee
 ---
 
 *SKILL.md generated for Airfinder v1.0 — complete system reproduction guide*
+
+---
+
+## POST-v1 IMPROVEMENTS (applied after initial build)
+
+### 1. Airport Database Expansion (mock_flights.py)
+- Airports: 21 → 191, all with `lat`/`lon` coordinates
+- New regions: Germany (13), UK (7), France (6), Benelux (4), Switzerland (2),
+  Austria (2), Spain (7), Portugal (3), Italy (6), Scandinavia (5), Eastern Europe (11),
+  Greece (4), Americas (27), Asia (28), Oceania (7)
+- Germany airports: FRA, MUC, DUS, BER, HAM, STR, CGN, NUE, HAJ, LEJ, DRS, BSL, FKB
+- Nigeria airports: LOS, ABV, PHC, KAN, ENU
+
+### 2. Haversine Flight Duration (mock_flights.py)
+- Replaced hardcoded route lookup table with great-circle distance formula
+- `_haversine_km(lat1, lon1, lat2, lon2)` → km → hours at 870 km/h cruise
+- `@lru_cache(maxsize=512)` on `_estimate_duration` for performance
+- `arr_hour = int(...)` cast prevents float format error in f-string `{:02d}`
+
+### 3. Airline Pool Expansion + Region Filtering (mock_flights.py)
+- Airlines: 14 → 50 across 6 regions (africa, middle_east, europe, asia, americas, oceania)
+- Added `longhaul: bool` field to each airline
+- `_eligible_airlines(origin_region, dest_region)`:
+  - Same region → only airlines from that region
+  - Cross-region → longhaul from both endpoint regions + all Middle East carriers
+  - Fallback: add any longhaul airline if pool < 4
+- BASE_PRICES: ~30 → 471 route pairs
+
+### 4. Airport Carrier Whitelist (mock_flights.py)
+- `AIRPORT_CARRIERS` dict: maps airport codes to sets of airlines that actually serve them
+- `_apply_airport_restrictions(pool, origin, destination)` called after `_eligible_airlines()`
+- Prevents impossible airline-airport combos (e.g. Etihad/Turkish on DUS→PHC)
+- Restricted airports:
+  - PHC: Air Peace, Arik Air, IbomAir, Ethiopian Airlines, Kenya Airways, RwandAir
+  - KAN: Air Peace, Arik Air, IbomAir, Ethiopian Airlines, RwandAir
+  - ENU: Air Peace, Arik Air, IbomAir
+  - DLA/LFW/COO/OUA/BKO/CKY: Air France, Royal Air Maroc, ASKY, Ethiopian, Air Côte d'Ivoire
+  - JRO: Ethiopian, Kenya Airways, RwandAir, KLM
+  - EBB: Ethiopian, Kenya Airways, RwandAir, Emirates, Qatar, Turkish
+  - STR/CGN/NUE/HAJ/LEJ/DRS/FKB: Lufthansa, Eurowings, Ryanair, EasyJet, Wizz Air
+  - EDI/BHX/GLA/MAN: British Airways + LCCs + limited longhaul
+
+### 5. Flight Status / Tracking Page (frontend/flight-status.html + backend/routes/flights.py)
+- New page: `/flight-status.html`
+- New endpoint: `GET /api/flights/status?flight=XX&date=YYYY-MM-DD`
+- Deterministic mock: `hashlib.md5(flight+date)` seeds `random.Random` — same input = same result
+- Returns: airline, origin/destination with full names, scheduled/actual times, status,
+  delay_minutes, gate, terminal, aircraft, baggage_belt, distance_km
+- Status options: on_time (50%), delayed (15%), boarding (15%), departed (20%),
+  arrived (20%), cancelled (5%) — weighted via deterministic seed
+- Frontend: green gradient hero, 4-step progress bar, info grid, Web Share API button,
+  8 quick-example flight lookups, URL param auto-trigger (?flight=XX&date=YYYY-MM-DD)
+
+### 6. Flight Status Navbar Link — All Pages
+Added `<a href="/flight-status.html" class="navbar-link">Flight Status</a>` to:
+- frontend/index.html
+- frontend/results.html
+- frontend/booking.html
+- frontend/multicity.html
+- frontend/confirmation.html (full navbar added — was bare brand-only)
+- frontend/account/dashboard.html
+- frontend/account/bookings.html
+- frontend/account/profile.html
+
+### 7. Currency Localization (frontend/js/locale.js)
+- All prices display in EUR (not USD)
+- `fmtCurrency()` converts USD→EUR client-side using fixed rate
+- EUR symbol used sitewide; dollar signs removed from all SVG icons
+
+### 8. Forgot Password Flow (staff portal)
+- `POST /api/staff/auth/forgot-password` → email reset link
+- `POST /api/staff/auth/reset-password` → token-based password reset
+- Frontend: /admin/forgot-password.html, /admin/reset-password.html
+
+### 9. My Profile Page (all staff roles)
+- Self-service password change available to all staff (not just super_admin)
+- `/staff/profile.html` page with current password verification before change
+
+### VERIFICATION ADDITIONS
+12. http://localhost:5000/flight-status.html — enter LH401 + any future date → status card renders
+13. Search DUS→PHC — only Air Peace, Ethiopian, Kenya Airways, RwandAir appear (not Emirates/Turkish)
+14. Search DUS→LOS — broader pool including KLM, Air France, Emirates
+15. Search FRA→JFK — only longhaul European/Middle East/US carriers appear
