@@ -62,6 +62,22 @@ AIRLINES = [
     {'name': 'Air New Zealand', 'code': 'NZ', 'region': 'oceania', 'longhaul': True, 'trust_score': 4.7},
 ]
 
+def _apply_airport_restrictions(pool, origin, destination):
+    """Narrow airline pool to carriers that actually serve these specific airports."""
+    dest_w = AIRPORT_CARRIERS.get(destination)
+    orig_w = AIRPORT_CARRIERS.get(origin)
+    if not dest_w and not orig_w:
+        return pool
+    if dest_w and orig_w:
+        intersect = [a for a in pool if a['name'] in dest_w and a['name'] in orig_w]
+        if len(intersect) >= 2:
+            return intersect
+        dest_only = [a for a in pool if a['name'] in dest_w]
+        return dest_only if len(dest_only) >= 2 else pool
+    whitelist = dest_w or orig_w
+    restricted = [a for a in pool if a['name'] in whitelist]
+    return restricted if len(restricted) >= 2 else pool
+
 def _eligible_airlines(origin_region, dest_region):
     """Return airlines that plausibly operate a route between these two regions."""
     same_region = origin_region == dest_region
@@ -796,6 +812,41 @@ BASE_PRICES = {
     ('BNE', 'AKL'): (180, 420),
 }
 
+# Airlines that actually serve specific airports.
+# If an origin or destination is listed here, only these airlines appear in results.
+# Major hubs (LOS, ABV, FRA, LHR, DXB, etc.) are NOT listed — they get the full pool.
+AIRPORT_CARRIERS = {
+    # Nigerian regional — Gulf/European/Asian majors do NOT fly here
+    'PHC': {'Air Peace', 'Arik Air', 'IbomAir', 'Ethiopian Airlines', 'Kenya Airways', 'RwandAir'},
+    'KAN': {'Air Peace', 'Arik Air', 'IbomAir', 'Ethiopian Airlines', 'RwandAir'},
+    'ENU': {'Air Peace', 'Arik Air', 'IbomAir'},
+    # West Africa regional
+    'DLA': {"Air Côte d'Ivoire", 'ASKY Airlines', 'Ethiopian Airlines', 'Royal Air Maroc', 'Air France'},
+    'LFW': {'ASKY Airlines', 'Ethiopian Airlines', 'Royal Air Maroc', 'Air France', "Air Côte d'Ivoire"},
+    'COO': {'ASKY Airlines', 'Ethiopian Airlines', 'Royal Air Maroc', 'Air France', "Air Côte d'Ivoire"},
+    'OUA': {"Air Côte d'Ivoire", 'ASKY Airlines', 'Ethiopian Airlines', 'Royal Air Maroc', 'Air France', 'Turkish Airlines'},
+    'BKO': {'Air France', 'Royal Air Maroc', 'Turkish Airlines', "Air Côte d'Ivoire", 'ASKY Airlines', 'Ethiopian Airlines'},
+    'CKY': {'Air France', 'Royal Air Maroc', "Air Côte d'Ivoire", 'ASKY Airlines', 'Ethiopian Airlines'},
+    # East Africa specific
+    'JRO': {'Ethiopian Airlines', 'Kenya Airways', 'RwandAir', 'KLM'},
+    'EBB': {'Ethiopian Airlines', 'Kenya Airways', 'RwandAir', 'Emirates', 'Qatar Airways', 'Turkish Airlines'},
+    # Southern Africa regional
+    'MPM': {'South African Airways', 'Ethiopian Airlines', 'Kenya Airways', 'RwandAir', 'Emirates'},
+    # German secondary airports — only short/medium haul carriers serve these
+    'STR': {'Lufthansa', 'Eurowings', 'Ryanair', 'EasyJet', 'Turkish Airlines', 'Wizz Air'},
+    'CGN': {'Eurowings', 'Ryanair', 'EasyJet', 'Wizz Air', 'Turkish Airlines'},
+    'NUE': {'Lufthansa', 'Eurowings', 'Ryanair', 'EasyJet'},
+    'HAJ': {'Lufthansa', 'Eurowings', 'Ryanair', 'EasyJet', 'Wizz Air'},
+    'LEJ': {'Ryanair', 'EasyJet', 'Wizz Air', 'Eurowings'},
+    'DRS': {'Ryanair', 'EasyJet', 'Eurowings', 'Lufthansa'},
+    'FKB': {'Ryanair', 'EasyJet', 'Wizz Air'},
+    # UK regional
+    'EDI': {'British Airways', 'EasyJet', 'Ryanair', 'Eurowings', 'KLM', 'Lufthansa'},
+    'BHX': {'British Airways', 'Ryanair', 'EasyJet', 'Wizz Air', 'Turkish Airlines', 'KLM'},
+    'GLA': {'British Airways', 'EasyJet', 'Ryanair', 'KLM'},
+    'MAN': {'British Airways', 'EasyJet', 'Ryanair', 'Jet2', 'Emirates', 'Qatar Airways', 'Turkish Airlines', 'KLM', 'Lufthansa'},
+}
+
 CABINS = {
     'economy': 1.0,
     'premium_economy': 1.8,
@@ -884,6 +935,7 @@ def search_flights(origin, destination, departure_date, passengers=1, cabin='eco
     o_region = AIRPORTS.get(origin, {}).get('region', '')
     d_region = AIRPORTS.get(destination, {}).get('region', '')
     pool = _eligible_airlines(o_region, d_region)
+    pool = _apply_airport_restrictions(pool, origin, destination)
     num_results = random.randint(3, 6)
     used_airlines = random.sample(pool, min(num_results, len(pool)))
 
