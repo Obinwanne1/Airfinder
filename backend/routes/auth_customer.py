@@ -126,6 +126,64 @@ def me():
         return jsonify({'error': 'User not found'}), 404
     return jsonify(user.to_dict())
 
+@bp.route('/me', methods=['PUT'])
+@jwt_required
+@limiter.limit("20 per hour")
+def update_me():
+    user = User.query.get(g.user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json()
+    first_name = data.get('first_name', '').strip()
+    last_name = data.get('last_name', '').strip()
+    phone = data.get('phone', '').strip()
+
+    if not first_name or not last_name:
+        return jsonify({'error': 'First name and last name are required'}), 400
+
+    user.first_name = first_name
+    user.last_name = last_name
+    user.phone = phone or None
+    db.session.commit()
+
+    return jsonify({'message': 'Profile updated', 'user': user.to_dict()})
+
+@bp.route('/change-password', methods=['POST'])
+@jwt_required
+@limiter.limit("10 per hour")
+def change_password():
+    user = User.query.get(g.user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json()
+    current = data.get('current_password', '')
+    new_pw = data.get('new_password', '')
+    confirm = data.get('confirm_password', '')
+
+    if not current or not new_pw or not confirm:
+        return jsonify({'error': 'All password fields are required'}), 400
+
+    if not bcrypt.checkpw(current.encode('utf-8'), user.password_hash.encode('utf-8')):
+        log_security_event('password_change_failed', user_type='customer', user_id=user.id, ip=request.remote_addr)
+        return jsonify({'error': 'Current password is incorrect'}), 400
+
+    if new_pw != confirm:
+        return jsonify({'error': 'New passwords do not match'}), 400
+
+    if len(new_pw) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+    if new_pw == current:
+        return jsonify({'error': 'New password must differ from current password'}), 400
+
+    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt())
+    user.password_hash = hashed.decode('utf-8')
+    db.session.commit()
+
+    return jsonify({'message': 'Password changed successfully'})
+
 def _generate_token(user_id: str, role: str, must_change_password=False) -> str:
     payload = {
         'user_id': user_id,
