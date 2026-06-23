@@ -210,9 +210,13 @@
   border: 1px solid var(--gray-200);
   margin-bottom: 14px;
   overflow: hidden;
-  transition: box-shadow .18s, transform .18s;
+  transition: box-shadow .2s cubic-bezier(0.4,0,0.2,1), transform .2s cubic-bezier(0.4,0,0.2,1), border-color .2s;
 }
-.flight-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.flight-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,.1), 0 2px 8px rgba(64,126,60,.08);
+  transform: translateY(-2px);
+  border-color: rgba(64,126,60,.25);
+}
 .flight-card.africa-direct { border-left: 4px solid var(--green); }
 .flight-card-header {
   display: grid;
@@ -223,16 +227,18 @@
 }
 .flight-airline { display: flex; align-items: center; gap: 10px; }
 .airline-logo {
-  width: 38px; height: 38px;
-  background: var(--green-pale);
-  border-radius: 8px;
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--green-pale) 0%, rgba(90,158,86,.18) 100%);
+  border: 1px solid rgba(64,126,60,.15);
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--green-dark);
   flex-shrink: 0;
+  letter-spacing: -.3px;
 }
 .airline-name { font-weight: 600; font-size: 14px; }
 .airline-flight { font-size: 12px; color: var(--gray-400); }
@@ -245,8 +251,8 @@
   justify-content: center;
 }
 .flight-time { text-align: center; }
-.flight-time-val { font-size: 1.4rem; font-weight: 800; }
-.flight-time-code { font-size: 12px; color: var(--gray-400); font-weight: 600; }
+.flight-time-val { font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
+.flight-time-code { font-size: 12px; color: var(--gray-400); font-weight: 700; letter-spacing: .3px; }
 .flight-line {
   flex: 1;
   display: flex;
@@ -279,7 +285,7 @@
 .true-cost {
   flex: 1;
 }
-.true-cost-total { font-size: 1.5rem; font-weight: 900; color: var(--green); }
+.true-cost-total { font-size: 1.6rem; font-weight: 900; color: var(--green); letter-spacing: -.5px; }
 .true-cost-label { font-size: 11px; color: var(--gray-400); }
 .true-cost-breakdown {
   display: flex;
