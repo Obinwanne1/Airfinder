@@ -39,12 +39,32 @@ const Search = {
     return 'trust-score-low';
   },
 
+  predictionStyle(color) {
+    return {
+      red: 'background:#fee2e2;color:#dc2626;',
+      orange: 'background:#ffedd5;color:#c2410c;',
+      blue: 'background:#dbeafe;color:#1d4ed8;',
+      green: 'background:#dcfce7;color:#16a34a;',
+      gray: 'background:#f3f4f6;color:#6b7280;',
+    }[color] || '';
+  },
+
   renderFlightCard(flight) {
     const p = flight.pricing;
     const isAfrica = flight.is_africa_route;
+    const pred = flight.price_prediction;
+    const co2 = flight.co2_kg_per_pax;
 
     const africaBadge = isAfrica
       ? `<span class="africa-badge">✈ Direct</span>`
+      : '';
+
+    const predBadge = pred && pred.label !== 'Departed'
+      ? `<span title="${pred.tip || ''}" style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;${this.predictionStyle(pred.color)}">${pred.label}</span>`
+      : '';
+
+    const co2Badge = co2
+      ? `<span title="Estimated CO₂ per passenger (ICAO methodology)" style="display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#16a34a;background:#dcfce7;padding:2px 7px;border-radius:99px;">🌿 ${co2} kg CO₂</span>`
       : '';
 
     const breakdown = `
@@ -67,7 +87,7 @@ const Search = {
     `).join('');
 
     return `
-      <div class="flight-card ${isAfrica ? 'africa-direct' : ''}" data-flight-id="${flight.id}">
+      <div class="flight-card ${isAfrica ? 'africa-direct' : ''}" data-flight-id="${flight.id}" data-dep-hour="${parseInt(flight.departure_time)}" data-duration="${flight.duration_hours}" data-airline="${flight.airline}" data-co2="${co2 || 9999}">
         <div class="flight-card-header">
           <div class="flight-airline">
             <div class="airline-logo">${flight.airline_code}</div>
@@ -95,8 +115,9 @@ const Search = {
               <div class="flight-time-code">${flight.destination}</div>
             </div>
           </div>
-          <div style="text-align:right;">
+          <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
             ${africaBadge}
+            ${predBadge}
             <div class="text-sm text-gray">${flight.available_seats} seats left</div>
           </div>
         </div>
@@ -105,6 +126,7 @@ const Search = {
             <div class="true-cost-label">Total True Cost — no surprises</div>
             <div class="true-cost-total">${fmtCurrency(p.total)}</div>
             ${breakdown}
+            <div style="margin-top:6px;">${co2Badge}</div>
           </div>
           <div class="flight-card-actions">
             <button class="btn btn-primary" onclick="bookFlight('${flight.id}')">Book Now</button>

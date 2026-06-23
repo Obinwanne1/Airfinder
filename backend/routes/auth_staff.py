@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify, current_app, g
 from backend.models.database import db
 from backend.models.staff import Staff, StaffRole
 from backend.middleware.jwt_guard import staff_required
+from backend.services.security_logger import log_security_event
 from backend.extensions import limiter, mail
 from flask_mail import Message
 
@@ -20,6 +21,7 @@ def staff_login():
 
     staff = Staff.query.filter_by(email=data['email'].lower()).first()
     if not staff or not bcrypt.checkpw(data['password'].encode('utf-8'), staff.password_hash.encode('utf-8')):
+        log_security_event('login_failed', user_type='staff', email=data['email'].lower(), ip=request.remote_addr)
         return jsonify({'error': 'Invalid credentials'}), 401
 
     if not staff.is_active:
@@ -114,7 +116,7 @@ def forgot_password():
     staff.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
     db.session.commit()
 
-    reset_url = f"{request.host_url}admin/reset-password.html?token={token}"
+    reset_url = f"{request.host_url}admin/reset-password.html#{token}"
 
     # Try to send email; fall back to returning the link directly (dev/no-mail mode)
     try:

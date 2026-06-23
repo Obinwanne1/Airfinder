@@ -58,7 +58,6 @@ def create_staff():
     return jsonify({
         'message': 'Staff account created. Credentials sent to email.',
         'staff': staff.to_dict(),
-        'temp_password': temp_password,  # Also returned for admin's record
     }), 201
 
 @bp.route('/<staff_id>', methods=['GET'])
@@ -116,7 +115,6 @@ def reset_staff_password(staff_id):
 
     return jsonify({
         'message': 'Password reset. New credentials sent to staff email.',
-        'temp_password': temp_password,
     })
 
 @bp.route('/<staff_id>', methods=['DELETE'])

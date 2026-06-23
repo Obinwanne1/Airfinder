@@ -8,6 +8,7 @@ from backend.models.database import db
 from backend.models.user import User
 from backend.middleware.jwt_guard import jwt_required
 from backend.services.email_service import send_welcome_email, send_password_reset_email
+from backend.services.security_logger import log_security_event
 from backend.extensions import limiter
 
 bp = Blueprint('auth_customer', __name__, url_prefix='/api/auth')
@@ -59,6 +60,7 @@ def login():
 
     user = User.query.filter_by(email=data['email'].lower()).first()
     if not user or not bcrypt.checkpw(data['password'].encode('utf-8'), user.password_hash.encode('utf-8')):
+        log_security_event('login_failed', user_type='customer', email=data['email'].lower(), ip=request.remote_addr)
         return jsonify({'error': 'Invalid credentials'}), 401
 
     if not user.is_active:
@@ -84,7 +86,7 @@ def forgot_password():
     db.session.commit()
 
     base_url = request.host_url.rstrip('/')
-    reset_link = f"{base_url}/auth/reset-password.html?token={token}"
+    reset_link = f"{base_url}/auth/reset-password.html#{token}"
     send_password_reset_email(user.email, user.first_name, reset_link)
 
     return jsonify({'message': 'If that email exists, a reset link was sent.'})

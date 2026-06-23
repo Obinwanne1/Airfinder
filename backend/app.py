@@ -6,10 +6,15 @@ from backend.models.database import init_db
 from backend.extensions import limiter, mail
 
 def create_app():
-    app = Flask(__name__, static_folder='../frontend', static_url_path='')
+    _base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    app = Flask(__name__,
+                static_folder=os.path.join(_base, 'frontend'),
+                static_url_path='',
+                instance_path=os.path.join(_base, 'instance'))
     app.config.from_object(Config)
 
-    CORS(app, resources={r'/api/*': {'origins': '*'}})
+    allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5000,http://127.0.0.1:5000').split(',')
+    CORS(app, resources={r'/api/*': {'origins': [o.strip() for o in allowed_origins]}})
     limiter.init_app(app)
     mail.init_app(app)
 

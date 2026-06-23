@@ -8,11 +8,13 @@ from backend.models.user import User
 from backend.middleware.jwt_guard import jwt_required
 from backend.services.pricing import calculate_total
 from backend.services.email_service import send_booking_confirmation_email
+from backend.extensions import limiter
 
 bp = Blueprint('bookings', __name__, url_prefix='/api/bookings')
 
 @bp.route('', methods=['POST'])
 @jwt_required
+@limiter.limit("10 per minute")
 def create_booking():
     data = request.get_json()
     required = ['flight_id', 'origin', 'destination', 'departure_date', 'airline', 'base_fare', 'passengers']
@@ -63,6 +65,7 @@ def create_booking():
 
 @bp.route('/multicity', methods=['POST'])
 @jwt_required
+@limiter.limit("5 per minute")
 def create_multicity_booking():
     data = request.get_json()
     legs = data.get('legs', [])

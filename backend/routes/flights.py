@@ -1,11 +1,14 @@
+from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
-from backend.services.mock_flights import search_flights, get_featured_routes, get_airports
+from backend.services.mock_flights import search_flights, get_featured_routes, get_airports, get_cheapest_price
 from backend.services.ai_search import parse_natural_language
 from backend.services.pricing import calculate_total, BAGGAGE_FEES, SEAT_FEES
+from backend.extensions import limiter
 
 bp = Blueprint('flights', __name__, url_prefix='/api/flights')
 
 @bp.route('/search', methods=['GET'])
+@limiter.limit("60 per minute")
 def search():
     origin = request.args.get('origin', '').upper()
     destination = request.args.get('destination', '').upper()
@@ -39,6 +42,7 @@ def search():
     })
 
 @bp.route('/search/ai', methods=['POST'])
+@limiter.limit("30 per minute")
 def ai_search():
     data = request.get_json()
     query = data.get('query', '').strip()
@@ -72,6 +76,7 @@ def ai_search():
     })
 
 @bp.route('/search/multicity', methods=['POST'])
+@limiter.limit("20 per minute")
 def multicity_search():
     data = request.get_json()
     legs = data.get('legs', [])
@@ -101,6 +106,44 @@ def multicity_search():
 
     return jsonify({'legs': results, 'passengers': passengers, 'cabin': cabin})
 
+@bp.route('/search/flexible', methods=['GET'])
+@limiter.limit("20 per minute")
+def flexible_search():
+    origin = request.args.get('origin', '').upper()
+    destination = request.args.get('destination', '').upper()
+    date_str = request.args.get('date', '')
+    passengers = max(1, min(int(request.args.get('passengers', 1)), 9))
+    cabin = request.args.get('cabin', 'economy')
+
+    if not origin or not destination or not date_str:
+        return jsonify({'error': 'origin, destination, date required'}), 400
+
+    try:
+        center = datetime.strptime(date_str, '%Y-%m-%d')
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+
+    grid = []
+    for delta in range(-3, 4):
+        d = center + timedelta(days=delta)
+        d_str = d.strftime('%Y-%m-%d')
+        price = get_cheapest_price(origin, destination, d_str, passengers, cabin)
+        grid.append({
+            'date': d_str,
+            'day': d.strftime('%a'),
+            'price': price,
+            'is_target': delta == 0,
+            'is_cheapest': False,
+        })
+
+    prices = [g['price'] for g in grid if g['price'] is not None]
+    if prices:
+        min_price = min(prices)
+        for g in grid:
+            g['is_cheapest'] = g['price'] == min_price
+
+    return jsonify({'grid': grid, 'origin': origin, 'destination': destination})
+
 @bp.route('/featured', methods=['GET'])
 def featured():
     return jsonify(get_featured_routes())
@@ -110,6 +153,7 @@ def airports():
     return jsonify(get_airports())
 
 @bp.route('/pricing/calculate', methods=['POST'])
+@limiter.limit("60 per minute")
 def calculate_price():
     data = request.get_json()
     base_fare = data.get('base_fare')
