@@ -7,6 +7,146 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <link rel="stylesheet" href="/css/components.css">
+<style>
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--gray-600);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  background: var(--white);
+  color: var(--green);
+  box-shadow: var(--shadow-sm);
+}
+.tab-btn .tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--gray-200);
+  color: var(--gray-600);
+  border-radius: 99px;
+  font-size: 11px;
+  margin-left: 5px;
+}
+.tab-btn.active .tab-count {
+  background: var(--green-pale);
+  color: var(--green);
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.search-row input {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font);
+  background: var(--white);
+  outline: none;
+}
+.search-row input:focus { border-color: var(--green); }
+
+.booking-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.booking-card:hover { border-color: var(--green-light); }
+
+.booking-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.booking-ref-group { display: flex; align-items: center; gap: 10px; }
+.booking-ref { font-weight: 800; font-family: monospace; font-size: 15px; letter-spacing: .5px; color: var(--gray-800); }
+.multicity-badge {
+  font-size: 10px; font-weight: 700; background: #ede9fe; color: #6d28d9;
+  padding: 2px 7px; border-radius: 99px; text-transform: uppercase; letter-spacing: .5px;
+}
+.booking-header-right { display: flex; align-items: center; gap: 8px; }
+
+.booking-body { padding: 20px; }
+.booking-route-big { font-size: 1.35rem; font-weight: 900; margin-bottom: 4px; }
+.booking-flight-meta {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  font-size: 13px; color: var(--gray-600); margin-bottom: 16px;
+}
+.booking-flight-meta span { display: flex; align-items: center; gap: 4px; }
+
+.booking-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .booking-sections { grid-template-columns: 1fr; } }
+
+.booking-section-title {
+  font-size: 11px; font-weight: 700; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px;
+}
+.pax-item {
+  font-size: 13px; color: var(--gray-800); padding: 6px 0;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex; justify-content: space-between;
+}
+.pax-item:last-child { border-bottom: none; }
+.pax-name { font-weight: 600; }
+.pax-passport { font-size: 11px; color: var(--gray-400); font-family: monospace; }
+
+.price-rows { }
+.price-row {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--gray-600); padding: 4px 0;
+}
+.price-row.total {
+  font-weight: 800; font-size: 15px; color: var(--gray-800);
+  padding-top: 8px; border-top: 2px solid var(--gray-200); margin-top: 4px;
+}
+.price-row.total .price-val { color: var(--green); }
+
+.cancel-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
+.cancel-inline {
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-top: 10px;
+}
+.cancel-inline p { font-size: 14px; color: var(--red); margin-bottom: 12px; font-weight: 500; }
+.cancel-inline-btns { display: flex; gap: 8px; }
+
+.empty-tab {
+  text-align: center; padding: 60px 20px;
+  background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200);
+}
+.empty-tab-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-tab p { color: var(--gray-400); font-size: 14px; margin-top: 6px; }
+</style>
 </head>
 <body>
 <nav class="navbar">
@@ -18,6 +158,7 @@
     </div>
   </div>
 </nav>
+
 <div class="container">
   <div class="account-layout">
     <aside class="account-sidebar">
@@ -25,73 +166,242 @@
       <div class="account-name" id="user-name">Loading...</div>
       <div class="account-email" id="user-email"></div>
       <ul class="account-nav">
-        <li><a href="/account/dashboard.html"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Dashboard</a></li>
-        <li><a href="/account/bookings.html" class="active"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg> My Bookings</a></li>
+        <li><a href="/account/dashboard.html">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Dashboard</a></li>
+        <li><a href="/account/bookings.html" class="active">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg>
+          My Bookings</a></li>
         <li><a href="/">✈ Search Flights</a></li>
-        <li><a href="#" data-auth-logout><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Logout</a></li>
+        <li><a href="#" data-auth-logout>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout</a></li>
       </ul>
     </aside>
+
     <main>
-      <div class="flex-between mb-3">
-        <h2>My Bookings</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <h2 style="margin:0;">My Bookings</h2>
         <a href="/" class="btn btn-primary btn-sm">+ New Booking</a>
       </div>
+
       <div id="alert"></div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" id="tab-bar">
+        <button class="tab-btn active" data-tab="all">All <span class="tab-count" id="cnt-all">—</span></button>
+        <button class="tab-btn" data-tab="upcoming">Upcoming <span class="tab-count" id="cnt-upcoming">—</span></button>
+        <button class="tab-btn" data-tab="past">Past <span class="tab-count" id="cnt-past">—</span></button>
+        <button class="tab-btn" data-tab="cancelled">Cancelled <span class="tab-count" id="cnt-cancelled">—</span></button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Search by reference or route (e.g. LOS, AF123...)">
+      </div>
+
       <div id="bookings-list"><div class="spinner"></div></div>
     </main>
   </div>
 </div>
+
 <script src="/js/locale.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/auth.js"></script>
 <script>
+let allBookings = [];
+let activeTab = 'all';
+let cancelPending = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (!Auth.requireLogin()) return;
   const user = Auth.getUser();
-  document.getElementById('avatar').textContent = (user.first_name?.[0]||'') + (user.last_name?.[0]||'');
+  document.getElementById('avatar').textContent = (user.first_name?.[0] || '') + (user.last_name?.[0] || '');
   document.getElementById('user-name').textContent = `${user.first_name} ${user.last_name}`;
   document.getElementById('user-email').textContent = user.email;
 
   try {
-    const bookings = await api.get('/bookings');
-    if (bookings.length === 0) {
-      document.getElementById('bookings-list').innerHTML = '<div class="card card-body text-center"><p class="text-gray">No bookings yet.</p><a href="/" class="btn btn-primary mt-2">Search Flights</a></div>';
-      return;
-    }
-    document.getElementById('bookings-list').innerHTML = bookings.map(b => `
-      <div class="booking-card">
-        <div class="booking-card-header">
-          <span class="booking-ref">${b.reference}</span>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span class="badge ${b.status === 'confirmed' ? 'badge-green' : b.status === 'cancelled' ? 'badge-red' : 'badge-amber'}">${b.status}</span>
-            ${b.status === 'confirmed' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking('${b.id}')">Cancel</button>` : ''}
-          </div>
-        </div>
-        <div class="booking-card-body">
-          <div class="booking-route">${b.origin} → ${b.destination}</div>
-          <div class="booking-detail">${b.airline}${b.flight_number ? ' · ' + b.flight_number : ''} · ${b.departure_date}</div>
-          <div class="booking-detail">Cabin: ${b.cabin_class} · Passengers: ${b.passenger_count}</div>
-          <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
-            <span class="cost-item">Base ${fmtCurrency(b.pricing.base_fare)}</span>
-            <span class="cost-item">Fee ${fmtCurrency(b.pricing.service_fee)}</span>
-            <span class="cost-item highlight">Total ${fmtCurrency(b.pricing.total)}</span>
-          </div>
-        </div>
-      </div>`).join('');
+    allBookings = await api.get('/bookings');
+    updateCounts();
+    renderTab();
   } catch {
     document.getElementById('bookings-list').innerHTML = '<p class="text-gray">Could not load bookings.</p>';
   }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTab();
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', renderTab);
 });
 
-async function cancelBooking(id) {
-  if (!confirm('Cancel this booking?')) return;
+function updateCounts() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('cnt-all').textContent = allBookings.length;
+  document.getElementById('cnt-upcoming').textContent = allBookings.filter(b => b.status === 'confirmed' && b.departure_date >= today).length;
+  document.getElementById('cnt-past').textContent = allBookings.filter(b => b.status === 'confirmed' && b.departure_date < today).length;
+  document.getElementById('cnt-cancelled').textContent = allBookings.filter(b => b.status === 'cancelled').length;
+}
+
+function filterBookings() {
+  const today = new Date().toISOString().split('T')[0];
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  let list = allBookings;
+
+  if (activeTab === 'upcoming') list = list.filter(b => b.status === 'confirmed' && b.departure_date >= today);
+  else if (activeTab === 'past')  list = list.filter(b => b.status === 'confirmed' && b.departure_date < today);
+  else if (activeTab === 'cancelled') list = list.filter(b => b.status === 'cancelled');
+
+  if (q) {
+    list = list.filter(b =>
+      b.reference.toLowerCase().includes(q) ||
+      b.origin.toLowerCase().includes(q) ||
+      b.destination.toLowerCase().includes(q) ||
+      b.airline.toLowerCase().includes(q) ||
+      (b.flight_number || '').toLowerCase().includes(q)
+    );
+  }
+  return list;
+}
+
+function renderTab() {
+  const list = filterBookings();
+  const el = document.getElementById('bookings-list');
+  if (list.length === 0) {
+    const emptyMsg = {
+      all: 'No bookings yet.',
+      upcoming: 'No upcoming trips.',
+      past: 'No past flights found.',
+      cancelled: 'No cancelled bookings.',
+    }[activeTab];
+    el.innerHTML = `
+      <div class="empty-tab">
+        <div class="empty-tab-icon">✈</div>
+        <h3>${emptyMsg}</h3>
+        ${activeTab === 'all' || activeTab === 'upcoming'
+          ? '<p>Ready to explore?</p><a href="/" class="btn btn-primary mt-3">Search Flights</a>'
+          : '<p>Switch tabs to see other bookings.</p>'}
+      </div>`;
+    return;
+  }
+  el.innerHTML = list.map(b => renderCard(b)).join('');
+}
+
+function renderCard(b) {
+  const today = new Date().toISOString().split('T')[0];
+  const isUpcoming = b.status === 'confirmed' && b.departure_date >= today;
+  const p = b.pricing;
+
+  const paxHtml = (b.passengers || []).map(px => `
+    <div class="pax-item">
+      <span class="pax-name">${px.first_name} ${px.last_name}</span>
+      ${px.passport ? `<span class="pax-passport">${px.passport}</span>` : ''}
+    </div>`).join('') || '<div class="pax-item"><span class="pax-name">' + b.passenger_count + ' passenger(s)</span></div>';
+
+  const cancelBtn = isUpcoming
+    ? `<button class="btn btn-secondary btn-sm" onclick="toggleCancel('${b.id}')">Cancel Booking</button>`
+    : '';
+
+  const cancelInline = `
+    <div class="cancel-inline" id="cancel-${b.id}" style="display:none;">
+      <p>Are you sure you want to cancel booking <strong>${b.reference}</strong>? This cannot be undone.</p>
+      <div class="cancel-inline-btns">
+        <button class="btn btn-danger btn-sm" onclick="confirmCancel('${b.id}')">Yes, cancel it</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleCancel('${b.id}')">Keep booking</button>
+      </div>
+    </div>`;
+
+  return `
+    <div class="booking-card" id="card-${b.id}">
+      <div class="booking-card-header">
+        <div class="booking-ref-group">
+          <span class="booking-ref">${b.reference}</span>
+          ${b.is_multicity ? '<span class="multicity-badge">Multi-city</span>' : ''}
+          ${b.group_reference ? `<span style="font-size:11px;color:var(--gray-400);font-family:monospace;">Group: ${b.group_reference}</span>` : ''}
+        </div>
+        <div class="booking-header-right">
+          <span class="badge ${statusBadge(b.status)}">${b.status}</span>
+          ${cancelBtn}
+        </div>
+      </div>
+
+      <div class="booking-body">
+        <div class="booking-route-big">${b.origin} → ${b.destination}</div>
+        <div class="booking-flight-meta">
+          <span>✈ ${b.airline}${b.flight_number ? ' ' + b.flight_number : ''}</span>
+          <span>📅 ${formatDate(b.departure_date)}</span>
+          <span>💺 ${capitalize(b.cabin_class)}</span>
+          <span>👤 ${b.passenger_count} passenger${b.passenger_count !== 1 ? 's' : ''}</span>
+          <span style="color:var(--gray-400);font-size:12px;">Booked ${formatDate(b.created_at?.split('T')[0] || '')}</span>
+        </div>
+
+        <div class="booking-sections">
+          <div>
+            <div class="booking-section-title">Passengers</div>
+            <div>${paxHtml}</div>
+          </div>
+          <div>
+            <div class="booking-section-title">Price Breakdown</div>
+            <div class="price-rows">
+              <div class="price-row"><span>Base fare</span><span class="price-val">${fmtCurrency(p.base_fare)}</span></div>
+              <div class="price-row"><span>Markup</span><span class="price-val">${fmtCurrency(p.markup)}</span></div>
+              <div class="price-row"><span>Service fee</span><span class="price-val">${fmtCurrency(p.service_fee)}</span></div>
+              ${p.baggage_fee > 0 ? `<div class="price-row"><span>Baggage</span><span class="price-val">${fmtCurrency(p.baggage_fee)}</span></div>` : ''}
+              ${p.seat_fee > 0 ? `<div class="price-row"><span>Seat</span><span class="price-val">${fmtCurrency(p.seat_fee)}</span></div>` : ''}
+              <div class="price-row total"><span>Total</span><span class="price-val">${fmtCurrency(p.total)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        ${isUpcoming ? `<div class="cancel-section">${cancelInline}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function toggleCancel(id) {
+  const el = document.getElementById('cancel-' + id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function confirmCancel(id) {
+  const btn = document.querySelector(`#cancel-${id} .btn-danger`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Cancelling...'; }
   try {
     await api.post(`/bookings/${id}/cancel`, {});
-    document.getElementById('alert').innerHTML = '<div class="alert alert-success">Booking cancelled.</div>';
-    location.reload();
+    const booking = allBookings.find(b => b.id === id);
+    if (booking) booking.status = 'cancelled';
+    showAlert('Booking cancelled successfully.', 'success');
+    updateCounts();
+    renderTab();
   } catch (e) {
-    document.getElementById('alert').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+    showAlert(e.message || 'Could not cancel booking.', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Yes, cancel it'; }
   }
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('alert');
+  el.innerHTML = `<div class="alert alert-${type}" style="margin-bottom:16px;padding:12px 16px;border-radius:var(--radius-sm);background:${type === 'success' ? 'var(--green-pale)' : '#fef2f2'};color:${type === 'success' ? 'var(--green-dark)' : 'var(--red)'};font-size:14px;font-weight:500;">${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 4000);
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function statusBadge(s) {
+  return s === 'confirmed' ? 'badge-green' : s === 'cancelled' ? 'badge-red' : 'badge-amber';
+}
+
+function capitalize(s) {
+  return (s || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 </script>
 </body>
