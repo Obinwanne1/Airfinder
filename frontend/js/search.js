@@ -19,8 +19,9 @@ const Search = {
     return api.post('/flights/search/ai', { query });
   },
 
-  async loadFeatured() {
-    return api.get('/flights/featured');
+  async loadFeatured(forceRefresh = false) {
+    const url = forceRefresh ? '/flights/featured?refresh=true' : '/flights/featured';
+    return api.get(url);
   },
 
   async loadAirports() {
@@ -142,11 +143,14 @@ const Search = {
   },
 
   renderFeaturedRoute(route) {
+    const dur = route.duration_hours ? `${Math.floor(route.duration_hours)}h ${Math.round((route.duration_hours % 1) * 60)}m` : '';
+    const stopsLabel = route.stops_label || (route.stops === 0 ? 'Nonstop' : `${route.stops} stop`);
     return `
       <div class="route-card" onclick="quickSearch('${route.origin}','${route.destination}')">
         <div class="route-from">${route.origin} → ${route.destination}</div>
         <div class="route-to">${route.label}</div>
         <div class="route-airline">${route.airline}</div>
+        ${dur ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">${dur} · ${stopsLabel}</div>` : ''}
         <div class="route-price">
           <span class="route-price-from">from </span>${fmtCurrency(route.price_from)}
         </div>

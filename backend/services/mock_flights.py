@@ -1,5 +1,6 @@
 import math
 import random
+import time
 from datetime import datetime, timedelta
 from functools import lru_cache
 
@@ -1056,15 +1057,51 @@ def _estimate_duration(origin, destination, stops):
         base = 4.0
     return base + stops * 2
 
-def get_featured_routes():
-    return [
-        {'origin': 'LOS', 'destination': 'LHR', 'price_from': 549, 'airline': 'British Airways', 'label': 'Lagos → London'},
-        {'origin': 'LOS', 'destination': 'DXB', 'price_from': 420, 'airline': 'Emirates', 'label': 'Lagos → Dubai'},
-        {'origin': 'ABV', 'destination': 'NBO', 'price_from': 310, 'airline': 'Ethiopian Airlines', 'label': 'Abuja → Nairobi'},
-        {'origin': 'LOS', 'destination': 'JFK', 'price_from': 720, 'airline': 'Air Peace', 'label': 'Lagos → New York'},
-        {'origin': 'ACC', 'destination': 'ADD', 'price_from': 280, 'airline': 'RwandAir', 'label': 'Accra → Addis Ababa'},
-        {'origin': 'NBO', 'destination': 'JNB', 'price_from': 240, 'airline': 'Kenya Airways', 'label': 'Nairobi → Johannesburg'},
-    ]
+_FEATURED_ROUTE_DEFS = [
+    {'origin': 'LOS', 'destination': 'LHR', 'label': 'Lagos → London'},
+    {'origin': 'LOS', 'destination': 'DXB', 'label': 'Lagos → Dubai'},
+    {'origin': 'ABV', 'destination': 'NBO', 'label': 'Abuja → Nairobi'},
+    {'origin': 'LOS', 'destination': 'JFK', 'label': 'Lagos → New York'},
+    {'origin': 'ACC', 'destination': 'ADD', 'label': 'Accra → Addis Ababa'},
+    {'origin': 'NBO', 'destination': 'JNB', 'label': 'Nairobi → Johannesburg'},
+]
+
+_featured_cache = {'data': None, 'ts': 0}
+_FEATURED_TTL = 300  # 5 minutes
+
+
+def get_featured_routes(force_refresh=False):
+    now = time.time()
+    if not force_refresh and _featured_cache['data'] and (now - _featured_cache['ts']) < _FEATURED_TTL:
+        return _featured_cache['data']
+
+    search_date = (datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d')
+    results = []
+    for route in _FEATURED_ROUTE_DEFS:
+        try:
+            flights = search_flights(route['origin'], route['destination'], search_date)
+            if not flights:
+                continue
+            cheapest = min(flights, key=lambda f: f['pricing']['total'])
+            results.append({
+                'origin': route['origin'],
+                'destination': route['destination'],
+                'label': route['label'],
+                'airline': cheapest['airline'],
+                'price_from': cheapest['pricing']['total'],
+                'departure_time': cheapest['departure_time'],
+                'duration_hours': cheapest['duration_hours'],
+                'stops': cheapest['stops'],
+                'stops_label': cheapest['stops_label'],
+            })
+        except Exception:
+            continue
+
+    fetched_at = datetime.utcnow().strftime('%H:%M UTC')
+    payload = {'routes': results, 'fetched_at': fetched_at, 'search_date': search_date}
+    _featured_cache['data'] = payload
+    _featured_cache['ts'] = now
+    return payload
 
 def get_airports():
     return [{'code': k, **v} for k, v in AIRPORTS.items()]

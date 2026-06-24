@@ -146,7 +146,8 @@ def flexible_search():
 
 @bp.route('/featured', methods=['GET'])
 def featured():
-    return jsonify(get_featured_routes())
+    force = request.args.get('refresh', '').lower() == 'true'
+    return jsonify(get_featured_routes(force_refresh=force))
 
 @bp.route('/airports', methods=['GET'])
 def airports():
