@@ -168,6 +168,7 @@ function bookFlight(flightId) {
   const flight = Search.results.find(f => f.id === flightId);
   if (!flight) return;
   sessionStorage.setItem('af_flight', JSON.stringify(flight));
+  sessionStorage.setItem('af_flight_saved_at', new Date().toISOString());
   window.location.href = '/booking.html';
 }
 
