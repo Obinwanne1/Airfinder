@@ -17,11 +17,12 @@ def send_email(to_email: str, subject: str, html_body: str):
     mail_port = app.config.get('MAIL_PORT', 587)
     sender = app.config.get('MAIL_DEFAULT_SENDER', 'Airfinder <noreply@airfinder.com>')
 
-    if not mail_user or not mail_pass or mail_pass == 'your-mail-password-here':
-        msg = f"\n[EMAIL DEV MODE]\nTo: {to_email}\nSubject: {subject}\n"
-        import sys
-        sys.stdout.buffer.write(msg.encode('utf-8', errors='replace') + b"\n")
-        sys.stdout.flush()
+    if not mail_user or not mail_pass or 'your-' in (mail_pass or ''):
+        import pathlib
+        log_path = pathlib.Path(__file__).parent.parent.parent / '.claude' / 'email_dev.log'
+        log_path.parent.mkdir(exist_ok=True)
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(f"\n[EMAIL DEV MODE]\nTo: {to_email}\nSubject: {subject}\n---\n{html_body}\n===\n")
         return True
 
     try:
