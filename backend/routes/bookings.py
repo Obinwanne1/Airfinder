@@ -7,7 +7,7 @@ from backend.models.booking import Booking, BookingStatus, generate_reference
 from backend.models.user import User
 from backend.middleware.jwt_guard import jwt_required
 from backend.services.pricing import calculate_total
-from backend.services.email_service import send_booking_confirmation_email
+from backend.services.email_service import send_booking_confirmation_email, send_multicity_confirmation_email
 from backend.extensions import limiter
 
 bp = Blueprint('bookings', __name__, url_prefix='/api/bookings')
@@ -126,7 +126,11 @@ def create_multicity_booking():
 
     user = User.query.get(g.user_id)
     if user and created:
-        send_booking_confirmation_email(user.email, user.first_name, created[0].to_dict())
+        send_multicity_confirmation_email(
+            user.email, user.first_name,
+            [b.to_dict() for b in created],
+            group_ref, combined_total
+        )
 
     return jsonify({
         'group_reference': group_ref,
