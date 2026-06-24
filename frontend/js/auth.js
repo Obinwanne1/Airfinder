@@ -42,6 +42,11 @@ const Auth = {
       window.location.href = '/admin/login.html';
       return false;
     }
+    const user = this.getUser();
+    if (user && user.must_change_password && !window.location.pathname.includes('change-password')) {
+      window.location.href = '/admin/change-password.html';
+      return false;
+    }
     return true;
   },
 

@@ -37,7 +37,12 @@ def create_staff():
     if Staff.query.filter_by(email=data['email'].lower()).first():
         return jsonify({'error': 'Email already registered'}), 409
 
-    temp_password = _generate_temp_password()
+    temp_password = (data.get('temp_password') or '').strip()
+    if temp_password:
+        if len(temp_password) < 8:
+            return jsonify({'error': 'Temporary password must be at least 8 characters'}), 400
+    else:
+        temp_password = _generate_temp_password()
     hashed = bcrypt.hashpw(temp_password.encode('utf-8'), bcrypt.gensalt())
 
     staff = Staff(
@@ -58,6 +63,7 @@ def create_staff():
     return jsonify({
         'message': 'Staff account created. Credentials sent to email.',
         'staff': staff.to_dict(),
+        'temp_password': temp_password,
     }), 201
 
 @bp.route('/<staff_id>', methods=['GET'])
@@ -86,6 +92,12 @@ def update_staff(staff_id):
             return jsonify({'error': 'Cannot assign role equal to or above your own'}), 403
         staff.role = new_role
 
+    if 'email' in data:
+        new_email = data['email'].lower().strip()
+        if new_email != staff.email:
+            if Staff.query.filter_by(email=new_email).first():
+                return jsonify({'error': 'Email already in use'}), 409
+            staff.email = new_email
     if 'first_name' in data:
         staff.first_name = data['first_name']
     if 'last_name' in data:
@@ -115,6 +127,7 @@ def reset_staff_password(staff_id):
 
     return jsonify({
         'message': 'Password reset. New credentials sent to staff email.',
+        'temp_password': temp_password,
     })
 
 @bp.route('/<staff_id>', methods=['DELETE'])
@@ -123,9 +136,9 @@ def delete_staff(staff_id):
     if staff_id == g.user_id:
         return jsonify({'error': 'Cannot delete your own account'}), 400
     staff = Staff.query.get_or_404(staff_id)
-    staff.is_active = False
+    db.session.delete(staff)
     db.session.commit()
-    return jsonify({'message': 'Staff account deactivated'})
+    return jsonify({'message': 'Staff account permanently deleted'})
 
 def _generate_temp_password():
     chars = string.ascii_letters + string.digits + '!@#$%'

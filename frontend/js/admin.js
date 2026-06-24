@@ -28,6 +28,10 @@ const Admin = {
     return api.post(`/admin/staff/${id}/reset-password`, {});
   },
 
+  async deleteStaff(id) {
+    return api.del(`/admin/staff/${id}`);
+  },
+
   async updateBooking(id, data) {
     return api.put(`/admin/bookings/${id}`, data);
   },
